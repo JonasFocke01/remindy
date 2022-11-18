@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 notify-rust = "4.5.10"
+colored = "2"
+soloud = "1.0.2"
