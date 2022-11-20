@@ -58,14 +58,19 @@ fn build_notification(options: &mut Vec<String>) -> Result<String, String> {
     }
     timer_length_in_ms *= 60_000;
 
-    print!(" Timer started! I will remind you in: {}:{:02}", timer_length_in_ms/3_600_000, (timer_length_in_ms / 60_000) % 60);
-    while timer_length_in_ms > 0 {
-        print!("\r Reminder: '{}' running. Time left: {}:{:02}", message, timer_length_in_ms/3_600_000, (timer_length_in_ms / 60_000) % 60);
-        timer_length_in_ms -= 1000;
-        std::thread::sleep(time::Duration::from_secs(1));
-    }
+    let mut interval_timestamp = time::Instant::now();
 
-    print!("\n Time is up!\n");
+    print!("\n {}", "===================================================".blue());
+    print!("\n {} {} {} {}:{}:{}\n", "Reminder:".green(), message.bright_red(), "started. I will remind you in:".green(), format!("{:02}", timer_length_in_ms/3_600_000).bright_red(), format!("{:02}", (timer_length_in_ms / 60_000) % 60).bright_red(), format!("{:02}", (timer_length_in_ms / 1000) % 60).bright_red());
+    while timer_length_in_ms > 0 {
+        if interval_timestamp.elapsed().as_secs() == 1 {
+            print!("\r              {} {}:{}:{}   ", "Time left:".bright_green(), format!("{:02}", timer_length_in_ms/3_600_000).bright_red(), format!("{:02}", (timer_length_in_ms / 60_000) % 60).bright_red(), format!("{:02}", (timer_length_in_ms / 1000) % 60).bright_red());
+            timer_length_in_ms -= 1000;
+            interval_timestamp = time::Instant::now();
+        }
+    }
+    
+    print!("\n {}\n", "====================Time is up!====================".bright_red());
     Notification::new()
         .summary(message.as_str())
         .show().unwrap();
