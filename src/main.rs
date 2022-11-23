@@ -32,7 +32,8 @@ fn help(origin: String) {
     print!("\n");
     print!("{}\n", " Just spawn a new notification like so:".bright_green());
     print!("\n");
-    print!(" remindy testmeeting 15\n");
+    print!("{}\n", " remindy [NAME: string] [DURATION: number][MODIFIER: 'h' | 'm' | 's']".green());
+    print!(" remindy testmeeting 15m\n");
     print!("\n");
     print!("{}\n", " This will spawn a new countdown which will notify you in 15 minutes.".bright_green());
     std::process::exit(0);
@@ -40,7 +41,11 @@ fn help(origin: String) {
 
 fn build_notification(options: &mut Vec<String>) -> Result<String, String> {
     let message = options.remove(0);
-    let timer_length_string = options.remove(0);
+    let mut timer_length_string = options.remove(0);
+    let modifier = match timer_length_string.pop() {
+        Some(e) => e,
+        None => return Err("Modifier not found!".to_string())
+    };
 
     let mut timer_length_vec = timer_length_string.into_bytes();
 
@@ -56,7 +61,14 @@ fn build_notification(options: &mut Vec<String>) -> Result<String, String> {
         timer_length_in_ms += (*e as u64 * weight) as u64;
         weight *= 10;
     }
-    timer_length_in_ms *= 60_000;
+
+    timer_length_in_ms *= match modifier {
+        's' => 1000,
+        'm' => 60_000,
+        'h' => 3_600_000,
+        '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => return Err("no modifier found!".to_string()),
+        e => return Err(format!("modifier unknown: {}!", e))
+    };
 
     let mut interval_timestamp = time::Instant::now();
 
