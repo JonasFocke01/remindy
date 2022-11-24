@@ -1,5 +1,7 @@
+use notify_rust::Notification;
 use std::env;
 use colored::*;
+use soloud::*;
 
 use std::time;
 use chrono::naive::NaiveTime;
@@ -36,6 +38,13 @@ fn help(origin: String) {
     print!(" remindy testmeeting 15m\n");
     print!("\n");
     print!("{}\n", " This will spawn a new countdown which will notify you in 15 minutes.".bright_green());
+    print!("\n");
+    print!("{}\n", "======================== OR ======================".purple());
+    print!("\n");
+    print!("{}\n", " remindy [NAME: string] [TIME: [number][number]:[number][number]]".green());
+    print!(" remindy testmeeting 15:00\n");
+    print!("\n");
+    print!("{}\n", " This will spawn a new countdown which will notify you at 15:00 O'Clock.".bright_green());
     std::process::exit(0);
 }
 
