@@ -52,7 +52,9 @@ fn build_notification(message: String, timer_length_in_ms: &mut u64) {
     let mut interval_timestamp = time::Instant::now();
 
     print!("\n {}", "===================================================".blue());
+    //ToDo: this should also spawn a timer on a server to make this timer more reliable, if the host computer sleeps
     print!("\n {} {} {} {}:{}:{}\n", "Reminder:".green(), message.bright_red(), "started. I will remind you in:".green(), format!("{:02}", *timer_length_in_ms/3_600_000).bright_red(), format!("{:02}", (*timer_length_in_ms / 60_000) % 60).bright_red(), format!("{:02}", (*timer_length_in_ms / 1000) % 60).bright_red());
+    //ToDo: this should refer to <Instant> instead of counting down a number
     while *timer_length_in_ms > 1000 {
         if interval_timestamp.elapsed().as_secs() == 1 {
             print!("\r              {} {}:{}:{}   ", "Time left:".bright_green(), format!("{:02}", *timer_length_in_ms/3_600_000).bright_red(), format!("{:02}", (*timer_length_in_ms / 60_000) % 60).bright_red(), format!("{:02}", (*timer_length_in_ms / 1000) % 60).bright_red());
