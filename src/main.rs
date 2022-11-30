@@ -99,13 +99,17 @@ fn parse_time_remaining(options: &mut Vec<String>) -> Result<String, String> {
         return Err(format!("Wrong parameters: {:?} expected testmeeting 15:00 -OR- testmeeting 15:00 -d 1", options))
     }
     let mut timer_days_in_ms: u64 = 0;
-    if options.len() == 4 && options[2] == "-d" {
-        let mut timer_days_as_bytes = options.pop().unwrap().into_bytes();
-        // timer_days_as_bytes = timer_days_as_bytes.reverse();
-        for i in 0..(timer_days_as_bytes.len()) {
-            timer_days_in_ms += (timer_days_as_bytes[i] as u64 - 48) * 86_400_000;
+    if options.len() == 4 {
+        if options[2] == "-d" {
+
+            let timer_days_as_bytes = options.pop().unwrap().into_bytes();
+            for i in 0..(timer_days_as_bytes.len()) {
+                timer_days_in_ms += (timer_days_as_bytes[i] as u64 - 48) * 86_400_000;
+            }
+            options.pop().unwrap();
+        } else {
+            return Err(format!("Wrong parameter: {}, expected '-d'", options[2]))
         }
-        options.pop().unwrap();
     }
     
     let mut timer_input_string = options.remove(1);
@@ -123,8 +127,12 @@ fn parse_time_remaining(options: &mut Vec<String>) -> Result<String, String> {
             
             let timestamp_target = NaiveTime::from_num_seconds_from_midnight_opt(timer_length_in_ms as u32 / 1000, 0).unwrap();
             let system_time_now = Local::now().time();
+            let timestamps_difference = (timestamp_target - system_time_now).num_milliseconds() as u64;
+            if timestamps_difference >= 86_400_000 {
+                return Err("the desired time sould be in the future".to_string());
+            }
 
-            build_notification(options.pop().unwrap(), &mut (((timestamp_target - system_time_now).num_milliseconds() as u64) + timer_days_in_ms));
+            build_notification(options.pop().unwrap(), &mut (timestamps_difference + timer_days_in_ms));
         },
         Some(_) => return Err(format!("Wrong format for {} expected hh:mm", timer_input_string)),
         None => {
