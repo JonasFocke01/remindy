@@ -2,6 +2,7 @@ use colored::*;
 use notify_rust::Notification;
 use soloud::*;
 use std::env;
+use std::io::Write;
 
 use chrono::naive::NaiveTime;
 use chrono::offset::Local;
@@ -118,6 +119,7 @@ fn build_notification(message: String, timer_length_in_ms: &mut u64) {
             );
             *timer_length_in_ms -= 1000;
             interval_timestamp = time::Instant::now();
+            std::io::stdout().flush().unwrap_or_default();
         }
     }
 
