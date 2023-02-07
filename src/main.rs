@@ -10,6 +10,9 @@ use std::time;
 
 use curl::easy::Easy;
 
+const IOBROKER_IP: &str = "http://192.168.2.100:8087";
+const PROGRESSBAR_LENGTH: usize = 28;
+
 fn main() {
     let mut args: Vec<String> = env::args().collect();
 
@@ -79,6 +82,7 @@ fn help(origin: String) {
 }
 
 fn build_notification(message: String, timer_length_in_ms: &mut u64) {
+    let initial_timer_length_in_ms = timer_length_in_ms.clone();
     let mut interval_timestamp = time::Instant::now();
 
     print!(
@@ -88,13 +92,27 @@ fn build_notification(message: String, timer_length_in_ms: &mut u64) {
 
     // call iobroker
     let mut easy = Easy::new();
-    easy.url(format!("http://192.168.2.100:8087/set/0_userdata.0.endpoints.reminderMessage?value={}&prettyPrint", message).as_str()).unwrap();
+    easy.url(
+        format!(
+            "{}/set/0_userdata.0.endpoints.reminderMessage?value={}&prettyPrint",
+            IOBROKER_IP, message
+        )
+        .as_str(),
+    )
+    .unwrap();
     easy.get(true).unwrap();
     let transfer = easy.transfer();
     transfer.perform().unwrap();
 
     let mut easy = Easy::new();
-    easy.url(format!("http://192.168.2.100:8087/set/0_userdata.0.endpoints.nextReminder?value={}&prettyPrint", timer_length_in_ms).as_str()).unwrap();
+    easy.url(
+        format!(
+            "{}/set/0_userdata.0.endpoints.nextReminder?value={}&prettyPrint",
+            IOBROKER_IP, timer_length_in_ms
+        )
+        .as_str(),
+    )
+    .unwrap();
     easy.get(true).unwrap();
     let transfer = easy.transfer();
     transfer.perform().unwrap();
@@ -110,12 +128,30 @@ fn build_notification(message: String, timer_length_in_ms: &mut u64) {
     );
     while *timer_length_in_ms > 1000 {
         if interval_timestamp.elapsed().as_secs() == 1 {
+            let mut progress_bar_filler = vec![
+                "=";
+                ((initial_timer_length_in_ms - *timer_length_in_ms)
+                    / (initial_timer_length_in_ms / PROGRESSBAR_LENGTH as u64))
+                    as usize
+            ]
+            .join("");
+            let mut progress_bar_space = vec![
+                " ";
+                PROGRESSBAR_LENGTH
+                    - ((initial_timer_length_in_ms - *timer_length_in_ms)
+                        / (initial_timer_length_in_ms / PROGRESSBAR_LENGTH as u64))
+                        as usize
+            ]
+            .join("");
+
             print!(
-                "\r              {} {}:{}:{}   ",
+                "\r {} {}:{}:{} [{}>{}]",
                 "Time left:".bright_green(),
                 format!("{:02}", *timer_length_in_ms / 3_600_000).bright_red(),
                 format!("{:02}", (*timer_length_in_ms / 60_000) % 60).bright_red(),
-                format!("{:02}", (*timer_length_in_ms / 1000) % 60).bright_red()
+                format!("{:02}", (*timer_length_in_ms / 1000) % 60).bright_red(),
+                progress_bar_filler,
+                progress_bar_space
             );
             *timer_length_in_ms -= 1000;
             interval_timestamp = time::Instant::now();
@@ -124,9 +160,10 @@ fn build_notification(message: String, timer_length_in_ms: &mut u64) {
     }
 
     print!(
-        "\n {}\n",
+        "\r {}\n",
         "====================Time is up!====================".bright_red()
     );
+    std::io::stdout().flush().unwrap_or_default();
     Notification::new()
         .summary(message.as_str())
         .show()
