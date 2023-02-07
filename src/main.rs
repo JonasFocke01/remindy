@@ -128,14 +128,14 @@ fn build_notification(message: String, timer_length_in_ms: &mut u64) {
     );
     while *timer_length_in_ms > 1000 {
         if interval_timestamp.elapsed().as_secs() == 1 {
-            let mut progress_bar_filler = vec![
+            let progress_bar_filler = vec![
                 "=";
                 ((initial_timer_length_in_ms - *timer_length_in_ms)
                     / (initial_timer_length_in_ms / PROGRESSBAR_LENGTH as u64))
                     as usize
             ]
             .join("");
-            let mut progress_bar_space = vec![
+            let progress_bar_space = vec![
                 " ";
                 PROGRESSBAR_LENGTH
                     - ((initial_timer_length_in_ms - *timer_length_in_ms)
