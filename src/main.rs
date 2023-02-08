@@ -128,6 +128,7 @@ fn build_notification(message: String, timer_length_in_ms: &mut u64) {
     );
     while *timer_length_in_ms > 1000 {
         if interval_timestamp.elapsed().as_secs() == 1 {
+            interval_timestamp = time::Instant::now();
             let progress_bar_filler = vec![
                 "=";
                 ((initial_timer_length_in_ms - *timer_length_in_ms)
@@ -154,8 +155,10 @@ fn build_notification(message: String, timer_length_in_ms: &mut u64) {
                 progress_bar_space
             );
             *timer_length_in_ms -= 1000;
-            interval_timestamp = time::Instant::now();
             std::io::stdout().flush().unwrap_or_default();
+            std::thread::sleep(std::time::Duration::from_millis(
+                (1000 - interval_timestamp.elapsed().as_millis()) as u64,
+            ));
         }
     }
 
