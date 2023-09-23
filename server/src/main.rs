@@ -35,7 +35,15 @@ impl Display for Reminder {
         )
     }
 }
+impl From<ApiReminder> for Reminder {
+    fn from(value: ApiReminder) -> Self {
+        Self {
+            name: value.name,
+            finish_time: value.finish_time,
+        }
+    }
 }
+
 #[tokio::main]
 async fn main() {
     // remindy
