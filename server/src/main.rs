@@ -1,3 +1,10 @@
+use core::fmt;
+use std::{
+    fmt::Display,
+    io::Write,
+    net::{IpAddr, Ipv4Addr, SocketAddr},
+    sync::{Arc, Mutex},
+};
 
 use axum::{
     extract::{rejection::JsonRejection, State},
@@ -5,6 +12,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use crossterm::{cursor, execute};
 use serde::{Deserialize, Serialize};
 
 use time::{Duration, OffsetDateTime, UtcOffset};
@@ -71,6 +79,22 @@ async fn main() {
     });
 
     // terminal display
+    let mut to_revert_lines: u16;
+    loop {
+        if let Ok(reminders) = reminders.try_lock() {
+            let mut stdout = std::io::stdout();
+            stdout.flush().unwrap();
+            println!("\rreminders: ");
+            to_revert_lines = 1;
+            for reminder in reminders.iter() {
+                to_revert_lines += 1;
+                println!("{}", reminder);
+            }
+            execute!(stdout, cursor::MoveUp(to_revert_lines), cursor::Hide).unwrap();
+        }
+    }
+}
+
 async fn all_reminder(
     State(reminders): State<Arc<Mutex<Vec<Reminder>>>>,
 ) -> (StatusCode, Json<Vec<Reminder>>) {
