@@ -15,6 +15,26 @@ struct Reminder {
     // start_time: OffsetDateTime,
     finish_time: OffsetDateTime,
 }
+impl Display for Reminder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        let time_left = self.finish_time - now;
+        write!(
+            f,
+            "{:>10} {:0>2}:{:0>2}:{:0>2} {} {:>11} ",
+            self.name,
+            time_left.whole_hours() - time_left.whole_days() * 24,
+            time_left.whole_minutes() - time_left.whole_hours() * 60,
+            time_left.whole_seconds() - time_left.whole_minutes() * 60,
+            "Progressbar",
+            if time_left.whole_days() > 0 {
+                format!("(+{} days)", time_left.whole_days())
+            } else {
+                "".to_string()
+            }
+        )
+    }
+}
 }
 #[tokio::main]
 async fn main() {
