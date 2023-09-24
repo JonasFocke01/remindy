@@ -239,24 +239,14 @@ async fn main() {
                             }
                         }
                         KeyCode::Char('n') => {
-                            stdout.write_all(b"Enter new reminder name\n\r").unwrap();
+                            stdout.write_all(b"NAME:\n\r").unwrap();
                             let mut name = String::new();
                             let _trash_bin = disable_raw_mode().is_ok();
                             std::io::stdin().read_line(&mut name).unwrap();
                             let _trash_bin = enable_raw_mode().is_ok();
                             name = name.replace('\n', "");
 
-                            // TODO autodetect this
-                            stdout.write_all(b"Reminder with duration (1d7h25m)(d), time (15:32)(t) or date-time (15.04.23 14:44)(dt)\n\r").unwrap();
-                            let mut time_input_type = String::new();
-                            let _trash_bin = disable_raw_mode().is_ok();
-                            std::io::stdin().read_line(&mut time_input_type).unwrap();
-                            let _trash_bin = enable_raw_mode().is_ok();
-                            time_input_type = time_input_type.replace('\n', "");
-
-                            stdout
-                                .write_all(format!("Enter ({})\n\r", time_input_type).as_bytes())
-                                .unwrap();
+                            stdout.write_all(b"TIME:\n\r").unwrap();
                             let mut time_input = String::new();
                             let _trash_bin = disable_raw_mode().is_ok();
                             std::io::stdin().read_line(&mut time_input).unwrap();
@@ -270,29 +260,15 @@ async fn main() {
                                 .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
 
                             let reminder_type: ReminderType;
-                            match time_input_type.as_str() {
-                                #[allow(clippy::useless_conversion)]
-                                "d" => {
-                                    let d: core::time::Duration =
-                                        DurationString::from_string(time_input).unwrap().into();
-                                    duration = Duration::from(d.try_into().unwrap());
-                                    finish_time = start_time + duration;
-                                    reminder_type = ReminderType::Duration;
-                                }
-                                "t" => todo!("t"),
-                                "dt" => todo!("dt"),
-                                _ => {
-                                    stdout
-                                        .write_all(
-                                            format!(
-                                                "{} is a unknown time input type!\n\r",
-                                                time_input_type
-                                            )
-                                            .as_bytes(),
-                                        )
-                                        .unwrap();
-                                    reminder_type = ReminderType::Duration;
-                                }
+                            #[allow(clippy::useless_conversion)]
+                            if time_input.chars().all(|e| e.is_ascii_digit()) {
+                                reminder_type = ReminderType::Time;
+                            } else {
+                                let d: core::time::Duration =
+                                    DurationString::from_string(time_input).unwrap().into();
+                                duration = Duration::from(d.try_into().unwrap());
+                                finish_time = start_time + duration;
+                                reminder_type = ReminderType::Duration;
                             }
 
                             if let Ok(mut reminders) = reminders.lock() {
