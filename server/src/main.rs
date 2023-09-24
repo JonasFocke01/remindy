@@ -261,6 +261,8 @@ async fn main() {
                                 })
                             }
                         }
+                        KeyCode::Char('k') => cursor_position = cursor_position.saturating_sub(1),
+                        KeyCode::Char('j') => {
                         KeyCode::Char('r') => {
                             if let Ok(mut reminders) = reminders.lock() {
                                 let reminder = reminders.get_mut(cursor_position).unwrap();
