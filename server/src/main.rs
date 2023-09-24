@@ -29,9 +29,16 @@ use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime, UtcOffset};
 
 #[derive(Clone, Serialize, Deserialize)]
+enum ReminderType {
+    Duration,
+    Time,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
 struct Reminder {
     name: String,
     start_time: OffsetDateTime,
+    reminder_type: ReminderType,
     duration: Duration,
     finish_time: OffsetDateTime,
     finish_notifications_send: bool,
@@ -56,7 +63,18 @@ impl Reminder {
     fn restart(&mut self) {
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         self.start_time = now;
-        self.finish_time = now + self.duration;
+        match self.reminder_type {
+            ReminderType::Time => {
+                self.finish_time = self.finish_time.replace_date(now.date());
+                if self.finish_time < now {
+                    self.finish_time += Duration::days(1)
+                }
+                self.duration = self.finish_time - now;
+            }
+            ReminderType::Duration => {
+                self.finish_time = now + self.duration;
+            }
+        }
         self.delete_flag = false;
         self.restart_flag = false;
     }
@@ -82,7 +100,7 @@ impl Display for Reminder {
             progressbar.push('>');
             write!(
                 f,
-                "{:>10} {:0>2}:{:0>2}:{:0>2} [{:<21}] {:>11} ",
+                "{:>10} {:0>2}:{:0>2}:{:0>2} [{:<21}] {:>11} (duetime: {:?})",
                 if self.delete_flag {
                     self.name.clone().to_uppercase()
                 } else {
@@ -96,7 +114,8 @@ impl Display for Reminder {
                     format!("(+{} days)", time_left.whole_days())
                 } else {
                     "".to_string()
-                }
+                },
+                self.finish_time
             )
         } else if self.restart_flag {
             write!(
@@ -124,6 +143,7 @@ impl From<ApiReminder> for Reminder {
             finish_notifications_send: false,
             delete_flag: false,
             restart_flag: false,
+            reminder_type: ReminderType::Time,
         }
     }
 }
@@ -240,6 +260,7 @@ async fn main() {
                             let mut finish_time = OffsetDateTime::now_utc()
                                 .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
 
+                            let reminder_type: ReminderType;
                             match time_input_type.as_str() {
                                 #[allow(clippy::useless_conversion)]
                                 "d" => {
@@ -247,18 +268,22 @@ async fn main() {
                                         DurationString::from_string(time_input).unwrap().into();
                                     duration = Duration::from(d.try_into().unwrap());
                                     finish_time = start_time + duration;
+                                    reminder_type = ReminderType::Duration;
                                 }
                                 "t" => todo!("t"),
                                 "dt" => todo!("dt"),
-                                _ => stdout
-                                    .write_all(
-                                        format!(
-                                            "{} is a unknown time input type!\n\r",
-                                            time_input_type
+                                _ => {
+                                    stdout
+                                        .write_all(
+                                            format!(
+                                                "{} is a unknown time input type!\n\r",
+                                                time_input_type
+                                            )
+                                            .as_bytes(),
                                         )
-                                        .as_bytes(),
-                                    )
-                                    .unwrap(),
+                                        .unwrap();
+                                    reminder_type = ReminderType::Duration;
+                                }
                             }
 
                             if let Ok(mut reminders) = reminders.lock() {
@@ -270,6 +295,7 @@ async fn main() {
                                     finish_notifications_send: false,
                                     delete_flag: false,
                                     restart_flag: false,
+                                    reminder_type,
                                 })
                             }
                         }
