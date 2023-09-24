@@ -35,6 +35,7 @@ struct Reminder {
     duration: Duration,
     finish_time: OffsetDateTime,
     finish_notifications_send: bool,
+    restart_flag: bool,
 }
 impl Reminder {
     fn display(&mut self) -> String {
@@ -50,6 +51,13 @@ impl Reminder {
             self.finish_notifications_send = true;
         }
         format!("{}", self)
+    }
+    fn restart(&mut self) {
+        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        self.start_time = now;
+        self.finish_time = now + self.duration;
+        self.delete_flag = false;
+        self.restart_flag = false;
     }
 }
 impl Display for Reminder {
@@ -85,10 +93,16 @@ impl Display for Reminder {
                     "".to_string()
                 }
             )
+        } else if self.restart_flag {
+            write!(
+                f,
+                "?-------------------{} HAS FINISHED-------------------",
+                self.name,
+            )
         } else {
             write!(
                 f,
-                "----------------------{} HAS FINISHED----------------------",
+                "--------------------{} HAS FINISHED-------------------",
                 self.name,
             )
         }
@@ -155,6 +169,9 @@ async fn main() {
             .unwrap();
         stdout
             .write_all(b"'n' pauses the program and waits for a new reminder from stdin\n\r")
+            .unwrap();
+        stdout
+            .write_all(b"'r' marks as restartable. ('r' on marked reminder restarts it)\n\r")
             .unwrap();
         stdout.write_all(b"===============\n\n\r").unwrap();
         if let Ok(mut reminders) = reminders.try_lock() {
@@ -240,7 +257,18 @@ async fn main() {
                                     duration,
                                     finish_time,
                                     finish_notifications_send: false,
+                                    restart_flag: false,
                                 })
+                            }
+                        }
+                        KeyCode::Char('r') => {
+                            if let Ok(mut reminders) = reminders.lock() {
+                                let reminder = reminders.get_mut(cursor_position).unwrap();
+                                if reminder.restart_flag {
+                                    reminder.restart()
+                                } else {
+                                    reminder.restart_flag = true;
+                                }
                             }
                         }
                         _ => stdout
