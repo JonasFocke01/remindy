@@ -150,6 +150,9 @@ async fn main() {
         .unwrap();
         stdout.write_all(b"Remindy started\n\r").unwrap();
         stdout.write_all(b"===============\n\r").unwrap();
+        stdout
+            .write_all(b"'CTRL' + 'c' ends the programm gracefully\n\r")
+            .unwrap();
         stdout.write_all(b"===============\n\n\r").unwrap();
         if let Ok(mut reminders) = reminders.try_lock() {
             for (i, reminder) in reminders.iter_mut().enumerate() {
@@ -169,6 +172,12 @@ async fn main() {
             match read().unwrap() {
                 Event::Key(event) => {
                     match event.code {
+                        KeyCode::Char('c') => {
+                            if event.modifiers.contains(KeyModifiers::CONTROL) {
+                                let _trash_bin = disable_raw_mode().is_ok();
+                                std::process::exit(0);
+                            }
+                        }
                         _ => stdout
                             .write_all(
                                 format!("{:?} is a unknown command!\n\r", event.code).as_bytes(),
