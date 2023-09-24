@@ -2,7 +2,6 @@
 // TODO: Increase clippy protection
 // TODO: Prettify console ouput
 // TODO: Play sound on reminder end
-// TODO: Merge into main branch
 // TODO: Make desktop notifications more noticable
 // TODO: Save reminder on close, and load on start in json file
 
