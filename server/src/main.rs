@@ -78,6 +78,13 @@ impl Reminder {
         self.delete_flag = false;
         self.restart_flag = false;
     }
+    fn snooze(&mut self) {
+        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        if self.finish_time < now {
+            self.finish_time += Duration::minutes(5);
+            self.duration += Duration::minutes(5);
+        }
+    }
 }
 impl Display for Reminder {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -328,6 +335,12 @@ async fn main() {
                                 } else {
                                     reminder.restart_flag = true;
                                 }
+                            }
+                        }
+                        KeyCode::Char('s') => {
+                            if let Ok(mut reminders) = reminders.lock() {
+                                let reminder = reminders.get_mut(cursor_position).unwrap();
+                                reminder.snooze();
                             }
                         }
                         _ => stdout
