@@ -153,6 +153,9 @@ async fn main() {
         stdout
             .write_all(b"'CTRL' + 'c' ends the programm gracefully\n\r")
             .unwrap();
+        stdout
+            .write_all(b"'n' pauses the program and waits for a new reminder from stdin\n\r")
+            .unwrap();
         stdout.write_all(b"===============\n\n\r").unwrap();
         if let Ok(mut reminders) = reminders.try_lock() {
             for (i, reminder) in reminders.iter_mut().enumerate() {
@@ -176,6 +179,68 @@ async fn main() {
                             if event.modifiers.contains(KeyModifiers::CONTROL) {
                                 let _trash_bin = disable_raw_mode().is_ok();
                                 std::process::exit(0);
+                            }
+                        }
+                        KeyCode::Char('n') => {
+                            stdout.write_all(b"Enter new reminder name\n\r").unwrap();
+                            let mut name = String::new();
+                            let _trash_bin = disable_raw_mode().is_ok();
+                            std::io::stdin().read_line(&mut name).unwrap();
+                            let _trash_bin = enable_raw_mode().is_ok();
+                            name = name.replace('\n', "");
+
+                            // TODO autodetect this
+                            stdout.write_all(b"Reminder with duration (1d7h25m)(d), time (15:32)(t) or date-time (15.04.23 14:44)(dt)\n\r").unwrap();
+                            let mut time_input_type = String::new();
+                            let _trash_bin = disable_raw_mode().is_ok();
+                            std::io::stdin().read_line(&mut time_input_type).unwrap();
+                            let _trash_bin = enable_raw_mode().is_ok();
+                            time_input_type = time_input_type.replace('\n', "");
+
+                            stdout
+                                .write_all(format!("Enter ({})\n\r", time_input_type).as_bytes())
+                                .unwrap();
+                            let mut time_input = String::new();
+                            let _trash_bin = disable_raw_mode().is_ok();
+                            std::io::stdin().read_line(&mut time_input).unwrap();
+                            let _trash_bin = enable_raw_mode().is_ok();
+                            time_input = time_input.replace('\n', "");
+
+                            let mut duration = Duration::new(0, 0);
+                            let start_time = OffsetDateTime::now_utc()
+                                .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+                            let mut finish_time = OffsetDateTime::now_utc()
+                                .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+
+                            match time_input_type.as_str() {
+                                #[allow(clippy::useless_conversion)]
+                                "d" => {
+                                    let d: core::time::Duration =
+                                        DurationString::from_string(time_input).unwrap().into();
+                                    duration = Duration::from(d.try_into().unwrap());
+                                    finish_time = start_time + duration;
+                                }
+                                "t" => todo!("t"),
+                                "dt" => todo!("dt"),
+                                _ => stdout
+                                    .write_all(
+                                        format!(
+                                            "{} is a unknown time input type!\n\r",
+                                            time_input_type
+                                        )
+                                        .as_bytes(),
+                                    )
+                                    .unwrap(),
+                            }
+
+                            if let Ok(mut reminders) = reminders.lock() {
+                                reminders.push(Reminder {
+                                    name,
+                                    start_time,
+                                    duration,
+                                    finish_time,
+                                    finish_notifications_send: false,
+                                })
                             }
                         }
                         _ => stdout
