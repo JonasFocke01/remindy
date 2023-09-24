@@ -137,19 +137,33 @@ async fn main() {
     });
 
     // terminal display
-    let mut to_revert_lines: u16;
     let mut cursor_position: usize = 0;
     let _trash_bin = enable_raw_mode().is_ok();
     let mut stdout = std::io::stdout();
     loop {
+        execute!(
+            stdout,
+            cursor::Hide,
+            terminal::Clear(terminal::ClearType::All),
+            cursor::MoveTo(0, 0)
+        )
+        .unwrap();
+        stdout.write_all(b"Remindy started\n\r").unwrap();
+        stdout.write_all(b"===============\n\r").unwrap();
+        stdout.write_all(b"===============\n\n\r").unwrap();
         if let Ok(mut reminders) = reminders.try_lock() {
-            let mut stdout = std::io::stdout();
-            stdout.flush().unwrap();
-            println!("\rreminders: ");
-            to_revert_lines = 1;
-            for reminder in reminders.iter_mut() {
-                to_revert_lines += 1;
-                println!("{}", reminder.display());
+            for (i, reminder) in reminders.iter_mut().enumerate() {
+                if i == cursor_position {
+                    stdout
+                        .write_all(format!("{} <--\n\r", reminder.display()).as_bytes())
+                        .unwrap();
+                } else {
+                    stdout
+                        .write_all(format!("{}\n\r", reminder.display()).as_bytes())
+                        .unwrap();
+                }
+            }
+        }
         if poll(std::time::Duration::from_millis(500)).unwrap() {
             #[allow(clippy::single_match)]
             match read().unwrap() {
@@ -164,7 +178,6 @@ async fn main() {
                 }
                 _ => (),
             }
-            execute!(stdout, cursor::MoveUp(to_revert_lines), cursor::Hide).unwrap();
         }
     }
 }
