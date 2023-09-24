@@ -47,6 +47,7 @@ struct Reminder {
 }
 impl Reminder {
     fn display(&mut self) -> String {
+        // TODO: Make UTC OFFSET a constant
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
@@ -211,6 +212,7 @@ async fn main() {
         stdout
             .write_all(b"'r' marks as restartable. ('r' on marked reminder restarts it)\n\r")
             .unwrap();
+        stdout.write_all(b"'esc' to unmark everything\n\r").unwrap();
         stdout.write_all(b"===============\n\n\r").unwrap();
         if let Ok(mut reminders) = reminders.try_lock() {
             for (i, reminder) in reminders.iter_mut().enumerate() {
@@ -343,6 +345,15 @@ async fn main() {
                                 reminder.snooze();
                             }
                         }
+                        KeyCode::Esc => {
+                            if let Ok(mut reminders) = reminders.lock() {
+                                for reminder in reminders.iter_mut() {
+                                    reminder.restart_flag = false;
+                                    reminder.delete_flag = false;
+                                }
+                            }
+                        }
+                        // TODO: pause reminder
                         _ => stdout
                             .write_all(
                                 format!("{:?} is a unknown command!\n\r", event.code).as_bytes(),
