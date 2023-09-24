@@ -1,3 +1,11 @@
+// TODO: Clean up code
+// TODO: Increase clippy protection
+// TODO: Prettify console ouput
+// TODO: Play sound on reminder end
+// TODO: Merge into main branch
+// TODO: Make desktop notifications more noticable
+// TODO: Save reminder on close, and load on start in json file
+
 use std::{
     fmt::Display,
     io::Write,
@@ -45,6 +53,7 @@ struct Reminder {
     delete_flag: bool,
     restart_flag: bool,
 }
+
 impl Reminder {
     fn display(&mut self) -> String {
         // TODO: Make UTC OFFSET a constant
