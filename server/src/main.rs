@@ -4,6 +4,7 @@
 // TODO: Play sound on reminder end
 // TODO: Make desktop notifications more noticable
 // TODO: Save reminder on close, and load on start in json file
+// TODO: Repair github pipeline
 
 use std::{
     fmt::Display,
