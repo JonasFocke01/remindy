@@ -35,6 +35,7 @@ struct Reminder {
     duration: Duration,
     finish_time: OffsetDateTime,
     finish_notifications_send: bool,
+    delete_flag: bool,
     restart_flag: bool,
 }
 impl Reminder {
@@ -82,7 +83,11 @@ impl Display for Reminder {
             write!(
                 f,
                 "{:>10} {:0>2}:{:0>2}:{:0>2} [{:<21}] {:>11} ",
-                self.name,
+                if self.delete_flag {
+                    self.name.clone().to_uppercase()
+                } else {
+                    self.name.clone()
+                },
                 time_left.whole_hours() - time_left.whole_days() * 24,
                 time_left.whole_minutes() - time_left.whole_hours() * 60,
                 time_left.whole_seconds() - time_left.whole_minutes() * 60,
@@ -117,6 +122,8 @@ impl From<ApiReminder> for Reminder {
             duration: now - value.finish_time,
             finish_time: value.finish_time,
             finish_notifications_send: false,
+            delete_flag: false,
+            restart_flag: false,
         }
     }
 }
@@ -169,6 +176,10 @@ async fn main() {
             .unwrap();
         stdout
             .write_all(b"'n' pauses the program and waits for a new reminder from stdin\n\r")
+            .unwrap();
+        stdout.write_all(b"Navigate with 'j' and 'k'\n\r").unwrap();
+        stdout
+            .write_all(b"'d' marks as deletable. ('d' on marked reminder deletes it)\n\r")
             .unwrap();
         stdout
             .write_all(b"'r' marks as restartable. ('r' on marked reminder restarts it)\n\r")
@@ -257,12 +268,32 @@ async fn main() {
                                     duration,
                                     finish_time,
                                     finish_notifications_send: false,
+                                    delete_flag: false,
                                     restart_flag: false,
                                 })
                             }
                         }
                         KeyCode::Char('k') => cursor_position = cursor_position.saturating_sub(1),
                         KeyCode::Char('j') => {
+                            if let Ok(reminders) = reminders.lock() {
+                                if cursor_position < reminders.len() - 1 {
+                                    cursor_position = cursor_position.saturating_add(1)
+                                }
+                            }
+                        }
+                        KeyCode::Char('d') => {
+                            if let Ok(mut reminders) = reminders.lock() {
+                                let reminder = reminders.get_mut(cursor_position).unwrap();
+                                if reminder.delete_flag {
+                                    reminders.remove(cursor_position);
+                                    if reminders.len() == cursor_position {
+                                        cursor_position = cursor_position.saturating_sub(1);
+                                    }
+                                } else {
+                                    reminder.delete_flag = true;
+                                }
+                            }
+                        }
                         KeyCode::Char('r') => {
                             if let Ok(mut reminders) = reminders.lock() {
                                 let reminder = reminders.get_mut(cursor_position).unwrap();
