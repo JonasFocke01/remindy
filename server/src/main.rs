@@ -12,6 +12,7 @@ use axum::{
     Json, Router,
 };
 use crossterm::{cursor, execute};
+use notify_rust::Notification;
 use serde::{Deserialize, Serialize};
 
 use time::{Duration, OffsetDateTime, UtcOffset};
@@ -22,6 +23,23 @@ struct Reminder {
     start_time: OffsetDateTime,
     duration: Duration,
     finish_time: OffsetDateTime,
+    finish_notifications_send: bool,
+}
+impl Reminder {
+    fn display(&mut self) -> String {
+        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        let time_left = self.finish_time - now;
+        if !time_left.is_positive() && !self.finish_notifications_send {
+            Notification::new()
+                .summary(self.name.as_str())
+                .urgency(notify_rust::Urgency::Critical)
+                .sound_name("alarm-clock_elapsed")
+                .show()
+                .unwrap();
+            self.finish_notifications_send = true;
+        }
+        format!("{}", self)
+    }
 }
 impl Display for Reminder {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -57,7 +75,11 @@ impl Display for Reminder {
                 }
             )
         } else {
-            write!(f, "----------------------{} HAS FINISHED----------------------", self.name,)
+            write!(
+                f,
+                "----------------------{} HAS FINISHED----------------------",
+                self.name,
+            )
         }
     }
 }
@@ -69,6 +91,7 @@ impl From<ApiReminder> for Reminder {
             start_time: now,
             duration: now - value.finish_time,
             finish_time: value.finish_time,
+            finish_notifications_send: false,
         }
     }
 }
@@ -82,6 +105,7 @@ async fn main() {
         start_time: temp_time,
         duration: Duration::hours(300),
         finish_time: temp_time + Duration::hours(300),
+        finish_notifications_send: false,
     }]));
 
     // axum
@@ -104,14 +128,14 @@ async fn main() {
     // terminal display
     let mut to_revert_lines: u16;
     loop {
-        if let Ok(reminders) = reminders.try_lock() {
+        if let Ok(mut reminders) = reminders.try_lock() {
             let mut stdout = std::io::stdout();
             stdout.flush().unwrap();
             println!("\rreminders: ");
             to_revert_lines = 1;
-            for reminder in reminders.iter() {
+            for reminder in reminders.iter_mut() {
                 to_revert_lines += 1;
-                println!("{}", reminder);
+                println!("{}", reminder.display());
             }
             execute!(stdout, cursor::MoveUp(to_revert_lines), cursor::Hide).unwrap();
         }
