@@ -357,7 +357,7 @@ async fn main() {
                                     if let Ok(mut reminders) = reminders.lock() {
                                         let reminder = reminders.get_mut(cursor_position).unwrap();
                                         #[allow(clippy::useless_conversion)]
-                                        if time_input.chars().all(|e| e.is_ascii_digit()) {
+                                        if time_input.chars().all(|e| e.is_ascii_digit() || e == ':') {
                                             finish_time = finish_time.replace_time(
                                                 Time::parse(
                                                     time_input.as_str(),
