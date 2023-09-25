@@ -231,24 +231,39 @@ async fn main() {
             cursor::MoveTo(0, 0)
         )
         .unwrap();
-        stdout.write_all(b"Remindy started\n\r").unwrap();
-        stdout.write_all(b"=====================================\n\r").unwrap();
-        stdout.write_all(b"'j', 'k' -> up, down\n\r").unwrap();
-        stdout.write_all(b"'n' -> new\n\r").unwrap();
-        stdout.write_all(b"'rn' -> rename\n\r").unwrap();
-        stdout.write_all(b"'rt' -> retime\n\r").unwrap();
-        stdout.write_all(b"'s' -> snooze\n\r").unwrap();
         stdout
-            .write_all(b"'d' -> delete (double tab needed)\n\r")
+            .write_all(b"           =======================================\n\r")
             .unwrap();
         stdout
-            .write_all(b"'rs' -> restart (double tab needed)\n\r")
+            .write_all(format!("           | {:<36}|\n\r", "'j', 'k' -> up, down").as_bytes())
             .unwrap();
-        stdout.write_all(b"'esc' -> unmark everything\n\r").unwrap();
         stdout
-            .write_all(b"'CTRL' + 'c' -> exit(0)\n\r")
+            .write_all(format!("           | {:<36}|\n\r", "'n' -> new").as_bytes())
             .unwrap();
-        stdout.write_all(b"=====================================\n\n\r").unwrap();
+        stdout
+            .write_all(format!("           | {:<36}|\n\r", "'rn' -> rename").as_bytes())
+            .unwrap();
+        stdout
+            .write_all(format!("           | {:<36}|\n\r", "'rt' -> retime").as_bytes())
+            .unwrap();
+        stdout
+            .write_all(format!("           | {:<36}|\n\r", "'s' -> snooze").as_bytes())
+            .unwrap();
+        stdout
+            .write_all(format!("           | {:<36}|\n\r", "'d' -> delete (double tab needed)").as_bytes())
+            .unwrap();
+        stdout
+            .write_all(format!("           | {:<36}|\n\r", "'rs' -> restart (double tab needed)").as_bytes())
+            .unwrap();
+        stdout
+            .write_all(format!("           | {:<36}|\n\r", "'esc' -> unmark everything").as_bytes())
+            .unwrap();
+        stdout
+            .write_all(format!("           | {:<36}|\n\r", "'CTRL' + 'c' -> exit(0)").as_bytes())
+            .unwrap();
+        stdout
+            .write_all(b"           =======================================\n\n\r")
+            .unwrap();
         if let Ok(mut reminders) = reminders.try_lock() {
             for (i, reminder) in reminders.iter_mut().enumerate() {
                 if i == cursor_position {
