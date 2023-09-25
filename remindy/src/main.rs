@@ -97,7 +97,7 @@ impl Reminder {
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         if self.finish_time < now {
             self.finish_time += Duration::minutes(5);
-                                        reminder.finish_notifications_send = false;
+            self.finish_notifications_send = false;
             self.duration += Duration::minutes(5);
             self.finish_notifications_send = false;
         }
