@@ -121,7 +121,7 @@ impl Display for Reminder {
             }
             progressbar.push('>');
             let format =
-                format_description::parse("[hour]:[minute]:[second] [day]-[month]-[year]").unwrap();
+                format_description::parse("[hour]:[minute]:[second] [day].[month].[year]").unwrap();
             write!(
                 f,
                 "{:>10} {:0>2}{}{:0>2}{}{:0>2} {}{:<21}{} {:>11} {}{}{}",
