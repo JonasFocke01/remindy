@@ -19,6 +19,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use colored::Colorize;
 use crossterm::{
     cursor,
     event::KeyModifiers,
@@ -55,7 +56,7 @@ struct Reminder {
 }
 
 impl Reminder {
-    fn display(&mut self) -> String {
+    fn display(&mut self, selected: bool) -> String {
         // TODO: Make UTC OFFSET a constant
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
@@ -68,7 +69,11 @@ impl Reminder {
                 .unwrap();
             self.finish_notifications_send = true;
         }
-        format!("{}", self)
+        if selected {
+            format!("{}{}{}", "[".blue(), self, "]".blue())
+        } else {
+            format!(" {} ", self)
+        }
     }
     fn restart(&mut self) {
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
@@ -115,36 +120,61 @@ impl Display for Reminder {
                 progressbar.push('=');
             }
             progressbar.push('>');
+            let format =
+                format_description::parse("[hour]:[minute]:[second] [day]-[month]-[year]").unwrap();
             write!(
                 f,
-                "{:>10} {:0>2}:{:0>2}:{:0>2} [{:<21}] {:>11} (duetime: {:?})",
+                "{:>10} {:0>2}{}{:0>2}{}{:0>2} {}{:<21}{} {:>11} {}{}{}",
                 if self.delete_flag {
-                    self.name.clone().to_uppercase()
+                    self.name.clone().bright_red()
+                } else if self.restart_flag {
+                    self.name.clone().bright_blue()
                 } else {
-                    self.name.clone()
+                    self.name.clone().bright_green()
                 },
-                time_left.whole_hours() - time_left.whole_days() * 24,
-                time_left.whole_minutes() - time_left.whole_hours() * 60,
-                time_left.whole_seconds() - time_left.whole_minutes() * 60,
-                progressbar,
+                (time_left.whole_hours() - time_left.whole_days() * 24)
+                    .to_string()
+                    .bright_red(),
+                ":".bright_red(),
+                (time_left.whole_minutes() - time_left.whole_hours() * 60)
+                    .to_string()
+                    .bright_red(),
+                ":".bright_red(),
+                (time_left.whole_seconds() - time_left.whole_minutes() * 60)
+                    .to_string()
+                    .bright_red(),
+                "[".bright_green(),
+                progressbar.bright_red(),
+                "]".bright_green(),
                 if time_left.whole_days() > 0 {
-                    format!("(+{} days)", time_left.whole_days())
+                    format!(
+                        "{}{}{}",
+                        "(+".bright_green(),
+                        time_left.whole_days().to_string().bright_red(),
+                        " days)".bright_green()
+                    )
                 } else {
                     "".to_string()
                 },
-                self.finish_time
-            )
-        } else if self.restart_flag {
-            write!(
-                f,
-                "?-------------------{} HAS FINISHED-------------------",
-                self.name,
+                "(".bright_green(),
+                self.finish_time.format(&format).unwrap().bright_red(),
+                ")".bright_green(),
             )
         } else {
             write!(
                 f,
-                "--------------------{} HAS FINISHED-------------------",
-                self.name,
+                "{} {:>10} {} {}",
+                "===================".yellow(),
+                if self.delete_flag {
+                    self.name.bright_red()
+                } else if self.restart_flag {
+                    self.name.bright_blue()
+                } else {
+                    self.name.bright_green()
+                },
+                "HAS FINISHED".bright_green(),
+                "================================".yellow(),
+
             )
         }
     }
@@ -250,10 +280,22 @@ async fn main() {
             .write_all(format!("           | {:<36}|\n\r", "'s' -> snooze").as_bytes())
             .unwrap();
         stdout
-            .write_all(format!("           | {:<36}|\n\r", "'d' -> delete (double tab needed)").as_bytes())
+            .write_all(
+                format!(
+                    "           | {:<36}|\n\r",
+                    "'d' -> delete (double tab needed)"
+                )
+                .as_bytes(),
+            )
             .unwrap();
         stdout
-            .write_all(format!("           | {:<36}|\n\r", "'rs' -> restart (double tab needed)").as_bytes())
+            .write_all(
+                format!(
+                    "           | {:<36}|\n\r",
+                    "'rs' -> restart (double tab needed)"
+                )
+                .as_bytes(),
+            )
             .unwrap();
         stdout
             .write_all(format!("           | {:<36}|\n\r", "'esc' -> unmark everything").as_bytes())
@@ -266,15 +308,9 @@ async fn main() {
             .unwrap();
         if let Ok(mut reminders) = reminders.try_lock() {
             for (i, reminder) in reminders.iter_mut().enumerate() {
-                if i == cursor_position {
-                    stdout
-                        .write_all(format!("{} <--\n\r", reminder.display()).as_bytes())
-                        .unwrap();
-                } else {
-                    stdout
-                        .write_all(format!("{}\n\r", reminder.display()).as_bytes())
-                        .unwrap();
-                }
+                stdout
+                    .write_all(format!("{}\n\r", reminder.display(i == cursor_position)).as_bytes())
+                    .unwrap();
             }
         }
         if poll(std::time::Duration::from_millis(500)).unwrap() {
