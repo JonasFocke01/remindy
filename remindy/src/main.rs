@@ -232,7 +232,7 @@ async fn main() {
         )
         .unwrap();
         stdout.write_all(b"Remindy started\n\r").unwrap();
-        stdout.write_all(b"===============\n\r").unwrap();
+        stdout.write_all(b"=====================================\n\r").unwrap();
         stdout.write_all(b"'j', 'k' -> up, down\n\r").unwrap();
         stdout.write_all(b"'n' -> new\n\r").unwrap();
         stdout.write_all(b"'rn' -> rename\n\r").unwrap();
@@ -248,6 +248,7 @@ async fn main() {
         stdout
             .write_all(b"'CTRL' + 'c' -> exit(0)\n\r")
             .unwrap();
+        stdout.write_all(b"=====================================\n\n\r").unwrap();
         if let Ok(mut reminders) = reminders.try_lock() {
             for (i, reminder) in reminders.iter_mut().enumerate() {
                 if i == cursor_position {
