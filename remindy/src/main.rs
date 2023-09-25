@@ -377,6 +377,7 @@ async fn main() {
                                                     .into();
                                             reminder.duration =
                                                 Duration::from(d.try_into().unwrap());
+                                            reminder.start_time = now;
                                             reminder.finish_time = now + d;
                                             reminder.reminder_type = ReminderType::Duration;
                                         }
