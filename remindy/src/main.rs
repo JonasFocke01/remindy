@@ -169,13 +169,38 @@ impl From<ApiReminder> for Reminder {
 async fn main() {
     // remindy
     let temp_time = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
-    let reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(vec![Reminder {
-        name: "foof".to_string(),
-        start_time: temp_time,
-        duration: Duration::hours(300),
-        finish_time: temp_time + Duration::hours(300),
-        finish_notifications_send: false,
-    }]));
+    let reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(vec![
+        Reminder {
+            name: "foof".to_string(),
+            start_time: temp_time,
+            duration: Duration::hours(300),
+            finish_time: temp_time + Duration::hours(300),
+            finish_notifications_send: false,
+            delete_flag: false,
+            restart_flag: false,
+            reminder_type: ReminderType::Time,
+        },
+        Reminder {
+            name: "sees".to_string(),
+            start_time: temp_time,
+            duration: Duration::hours(300),
+            finish_time: temp_time - Duration::hours(300),
+            finish_notifications_send: false,
+            delete_flag: false,
+            restart_flag: false,
+            reminder_type: ReminderType::Time,
+        },
+        Reminder {
+            name: "lool".to_string(),
+            start_time: temp_time,
+            duration: Duration::hours(300),
+            finish_time: temp_time + Duration::hours(300),
+            finish_notifications_send: false,
+            delete_flag: false,
+            restart_flag: false,
+            reminder_type: ReminderType::Time,
+        },
+    ]));
 
     // axum
     let reminders_axum_clone = Arc::clone(&reminders);
