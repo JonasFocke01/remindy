@@ -91,12 +91,15 @@ impl Reminder {
         }
         self.delete_flag = false;
         self.restart_flag = false;
+        self.finish_notifications_send = false;
     }
     fn snooze(&mut self) {
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         if self.finish_time < now {
             self.finish_time += Duration::minutes(5);
+                                        reminder.finish_notifications_send = false;
             self.duration += Duration::minutes(5);
+            self.finish_notifications_send = false;
         }
     }
 }
@@ -334,6 +337,7 @@ async fn main() {
                                     if let Ok(mut reminders) = reminders.lock() {
                                         let reminder = reminders.get_mut(cursor_position).unwrap();
                                         reminder.name = name;
+                                        reminder.finish_notifications_send = false;
                                     }
                                     let _trash_bin = enable_raw_mode().is_ok();
                                 }
@@ -376,6 +380,7 @@ async fn main() {
                                             reminder.finish_time = now + d;
                                             reminder.reminder_type = ReminderType::Duration;
                                         }
+                                        reminder.finish_notifications_send = false;
                                     }
                                     let _trash_bin = enable_raw_mode().is_ok();
                                 }
