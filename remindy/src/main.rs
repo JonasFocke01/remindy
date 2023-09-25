@@ -342,14 +342,11 @@ async fn main() {
                                     let _trash_bin = enable_raw_mode().is_ok();
                                 }
                                 KeyCode::Char('t') => {
-                                    let _trash_bin = disable_raw_mode().is_ok();
                                     let mut time_input = String::new();
+                                    let _trash_bin = disable_raw_mode().is_ok();
                                     std::io::stdin().read_line(&mut time_input).unwrap();
+                                    let _trash_bin = enable_raw_mode().is_ok();
                                     time_input = time_input.replace('\n', "");
-                                    if let Ok(mut reminders) = reminders.lock() {
-                                        let reminder = reminders.get_mut(cursor_position).unwrap();
-                                        reminder.name = time_input.clone();
-                                    }
                                     let now = OffsetDateTime::now_utc()
                                         .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
                                     let mut finish_time = OffsetDateTime::now_utc()
