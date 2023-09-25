@@ -272,49 +272,20 @@ async fn main() {
                                 std::process::exit(0);
                             }
                         }
+
                         KeyCode::Char('n') => {
-                            stdout.write_all(b"NAME:\n\r").unwrap();
-                            let mut name = String::new();
-                            let _trash_bin = disable_raw_mode().is_ok();
-                            std::io::stdin().read_line(&mut name).unwrap();
-                            let _trash_bin = enable_raw_mode().is_ok();
-                            name = name.replace('\n', "");
-
-                            stdout.write_all(b"TIME:\n\r").unwrap();
-                            let mut time_input = String::new();
-                            let _trash_bin = disable_raw_mode().is_ok();
-                            std::io::stdin().read_line(&mut time_input).unwrap();
-                            let _trash_bin = enable_raw_mode().is_ok();
-                            time_input = time_input.replace('\n', "");
-
-                            let mut duration = Duration::new(0, 0);
-                            let start_time = OffsetDateTime::now_utc()
-                                .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
-                            let mut finish_time = OffsetDateTime::now_utc()
-                                .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
-
-                            let reminder_type: ReminderType;
-                            #[allow(clippy::useless_conversion)]
-                            if time_input.chars().all(|e| e.is_ascii_digit()) {
-                                reminder_type = ReminderType::Time;
-                            } else {
-                                let d: core::time::Duration =
-                                    DurationString::from_string(time_input).unwrap().into();
-                                duration = Duration::from(d.try_into().unwrap());
-                                finish_time = start_time + duration;
-                                reminder_type = ReminderType::Duration;
-                            }
-
                             if let Ok(mut reminders) = reminders.lock() {
+                                let now = OffsetDateTime::now_utc()
+                                    .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
                                 reminders.push(Reminder {
-                                    name,
-                                    start_time,
-                                    duration,
-                                    finish_time,
+                                    name: "NEW".to_string(),
+                                    start_time: now,
+                                    reminder_type: ReminderType::Duration,
+                                    duration: Duration::new(0, 0),
+                                    finish_time: now,
                                     finish_notifications_send: false,
                                     delete_flag: false,
                                     restart_flag: false,
-                                    reminder_type,
                                 })
                             }
                         }
