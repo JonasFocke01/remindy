@@ -1,13 +1,12 @@
 // TODO: Clean up code
 // TODO: Increase clippy protection
-// TODO: Prettify console ouput
 // TODO: Play sound on reminder end
 // TODO: Make desktop notifications more noticable
-// TODO: Save reminder on close, and load on start in json file
 // TODO: Repair github pipeline
 
 use std::{
     fmt::Display,
+    fs::write,
     io::Write,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::{Arc, Mutex},
@@ -174,7 +173,6 @@ impl Display for Reminder {
                 },
                 "HAS FINISHED".bright_green(),
                 "================================".yellow(),
-
             )
         }
     }
@@ -198,39 +196,9 @@ impl From<ApiReminder> for Reminder {
 #[tokio::main]
 async fn main() {
     // remindy
-    let temp_time = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
-    let reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(vec![
-        Reminder {
-            name: "foof".to_string(),
-            start_time: temp_time,
-            duration: Duration::hours(300),
-            finish_time: temp_time + Duration::hours(300),
-            finish_notifications_send: true,
-            delete_flag: false,
-            restart_flag: false,
-            reminder_type: ReminderType::Time,
-        },
-        Reminder {
-            name: "sees".to_string(),
-            start_time: temp_time,
-            duration: Duration::hours(300),
-            finish_time: temp_time - Duration::hours(300),
-            finish_notifications_send: true,
-            delete_flag: false,
-            restart_flag: false,
-            reminder_type: ReminderType::Time,
-        },
-        Reminder {
-            name: "lool".to_string(),
-            start_time: temp_time,
-            duration: Duration::hours(300),
-            finish_time: temp_time + Duration::hours(300),
-            finish_notifications_send: true,
-            delete_flag: false,
-            restart_flag: false,
-            reminder_type: ReminderType::Time,
-        },
-    ]));
+    let reminders_from_file =
+        serde_json::from_str(std::fs::read_to_string("reminders.json").unwrap().as_str()).unwrap();
+    let reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(reminders_from_file));
 
     // axum
     let reminders_axum_clone = Arc::clone(&reminders);
@@ -460,6 +428,9 @@ async fn main() {
                 }
                 _ => (),
             }
+            let serialized_reminders =
+                serde_json::to_string_pretty(&reminders.lock().unwrap().clone()).unwrap();
+            write("reminders.json", serialized_reminders).unwrap();
         }
     }
 }
