@@ -429,9 +429,7 @@ async fn main() {
                                         cursor::MoveTo(0, cursor_position as u16)
                                     )
                                     .unwrap();
-                                    stdout
-                                        .write_all(b"New name: ")
-                                        .unwrap();
+                                    stdout.write_all(b"New name: ").unwrap();
                                     let _trash_bin = disable_raw_mode().is_ok();
                                     let mut name = String::new();
                                     std::io::stdin().read_line(&mut name).unwrap();
@@ -442,11 +440,7 @@ async fn main() {
                                         reminder.finish_notifications_send = true;
                                     }
                                     let _trash_bin = enable_raw_mode().is_ok();
-                                    execute!(
-                                        stdout,
-                                        cursor::Hide,
-                                    )
-                                    .unwrap();
+                                    execute!(stdout, cursor::Hide,).unwrap();
                                 }
                                 KeyCode::Char('t') => {
                                     execute!(
@@ -455,9 +449,7 @@ async fn main() {
                                         cursor::MoveTo(0, cursor_position as u16)
                                     )
                                     .unwrap();
-                                    stdout
-                                        .write_all(b"New end time (1h10m | 15:23): ")
-                                        .unwrap();
+                                    stdout.write_all(b"New end time (1h10m | 15:23): ").unwrap();
                                     let mut time_input = String::new();
                                     let _trash_bin = disable_raw_mode().is_ok();
                                     std::io::stdin().read_line(&mut time_input).unwrap();
@@ -500,11 +492,7 @@ async fn main() {
                                         reminder.finish_notifications_send = false;
                                     }
                                     let _trash_bin = enable_raw_mode().is_ok();
-                                    execute!(
-                                        stdout,
-                                        cursor::Hide,
-                                    )
-                                    .unwrap();
+                                    execute!(stdout, cursor::Hide,).unwrap();
                                 }
                                 _ => (),
                             },
