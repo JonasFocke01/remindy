@@ -56,6 +56,7 @@ struct Reminder {
 }
 
 impl Reminder {
+    #[cfg(not(target_os = "macos"))]
     fn display(&mut self, selected: bool) -> String {
         // TODO: Make UTC OFFSET a constant
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
@@ -69,6 +70,18 @@ impl Reminder {
                 .unwrap();
             self.finish_notifications_send = true;
         }
+        if selected {
+            format!("{}{}{}", "[".blue(), self, "]".blue())
+        } else {
+            format!(" {} ", self)
+        }
+    }
+    #[cfg(target_os = "macos")]
+    fn display(&mut self, selected: bool) -> String {
+        // TODO: Make UTC OFFSET a constant
+	    // TODO: Fix notifications for macos
+        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        let time_left = self.finish_time - now;
         if selected {
             format!("{}{}{}", "[".blue(), self, "]".blue())
         } else {
