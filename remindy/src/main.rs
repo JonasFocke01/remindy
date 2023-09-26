@@ -333,15 +333,58 @@ async fn main() {
                             }
                         }
                         KeyCode::Char('n') => {
+                            execute!(
+                                stdout,
+                                cursor::Show,
+                                cursor::MoveTo(0, (cursor_position as u16) + 20)
+                            )
+                            .unwrap();
+                            let _trash_bin = disable_raw_mode().is_ok();
+                            let mut name = String::new();
+                            std::io::stdin().read_line(&mut name).unwrap();
+                            name = name.replace('\n', "");
+                            let _trash_bin = enable_raw_mode().is_ok();
+
+                            let mut time_input = String::new();
+                            let _trash_bin = disable_raw_mode().is_ok();
+                            std::io::stdin().read_line(&mut time_input).unwrap();
+                            let _trash_bin = enable_raw_mode().is_ok();
+                            time_input = time_input.replace('\n', "");
+                            let now = OffsetDateTime::now_utc()
+                                .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+                            let mut finish_time = OffsetDateTime::now_utc()
+                                .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+                            let reminder_type: ReminderType;
+                            let duration: Duration;
+                            #[allow(clippy::useless_conversion)]
+                            if time_input.chars().all(|e| e.is_ascii_digit() || e == ':') {
+                                finish_time = finish_time.replace_time(
+                                    Time::parse(
+                                        time_input.as_str(),
+                                        &format_description::parse("[hour]:[minute]").unwrap(),
+                                    )
+                                    .unwrap(),
+                                );
+                                reminder_type = ReminderType::Time;
+                                duration = finish_time - now;
+                            } else {
+                                let d: core::time::Duration =
+                                    DurationString::from_string(time_input).unwrap().into();
+                                duration = Duration::from(d.try_into().unwrap());
+                                finish_time = now + d;
+                                reminder_type = ReminderType::Duration;
+                            }
+                            let _trash_bin = enable_raw_mode().is_ok();
+
                             if let Ok(mut reminders) = reminders.lock() {
                                 let now = OffsetDateTime::now_utc()
                                     .to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
                                 reminders.push(Reminder {
-                                    name: "NEW".to_string(),
+                                    name,
                                     start_time: now,
-                                    reminder_type: ReminderType::Duration,
-                                    duration: Duration::new(0, 0),
-                                    finish_time: now,
+                                    reminder_type,
+                                    duration,
+                                    finish_time,
                                     finish_notifications_send: true,
                                     delete_flag: false,
                                     restart_flag: false,
@@ -367,6 +410,9 @@ async fn main() {
                                         cursor::MoveTo(0, cursor_position as u16)
                                     )
                                     .unwrap();
+                                    stdout
+                                        .write_all(b"New name: ")
+                                        .unwrap();
                                     let _trash_bin = disable_raw_mode().is_ok();
                                     let mut name = String::new();
                                     std::io::stdin().read_line(&mut name).unwrap();
@@ -377,8 +423,22 @@ async fn main() {
                                         reminder.finish_notifications_send = true;
                                     }
                                     let _trash_bin = enable_raw_mode().is_ok();
+                                    execute!(
+                                        stdout,
+                                        cursor::Hide,
+                                    )
+                                    .unwrap();
                                 }
                                 KeyCode::Char('t') => {
+                                    execute!(
+                                        stdout,
+                                        cursor::Show,
+                                        cursor::MoveTo(0, cursor_position as u16)
+                                    )
+                                    .unwrap();
+                                    stdout
+                                        .write_all(b"New end time (1h10m | 15:23): ")
+                                        .unwrap();
                                     let mut time_input = String::new();
                                     let _trash_bin = disable_raw_mode().is_ok();
                                     std::io::stdin().read_line(&mut time_input).unwrap();
@@ -421,6 +481,11 @@ async fn main() {
                                         reminder.finish_notifications_send = false;
                                     }
                                     let _trash_bin = enable_raw_mode().is_ok();
+                                    execute!(
+                                        stdout,
+                                        cursor::Hide,
+                                    )
+                                    .unwrap();
                                 }
                                 _ => (),
                             },
