@@ -130,38 +130,5 @@
     "finish_notifications_send": true,
     "delete_flag": false,
     "restart_flag": false
-  },
-  {
-    "name": "NEW",
-    "start_time": [
-      2023,
-      269,
-      14,
-      43,
-      8,
-      401627000,
-      2,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "duration": [
-      10,
-      0
-    ],
-    "finish_time": [
-      2023,
-      269,
-      14,
-      43,
-      18,
-      401627000,
-      2,
-      0,
-      0
-    ],
-    "finish_notifications_send": true,
-    "delete_flag": false,
-    "restart_flag": false
   }
 ]
