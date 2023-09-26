@@ -7,7 +7,7 @@
 
 use std::{
     fmt::Display,
-    fs::write,
+    fs::{write, File},
     io::Write,
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::{Arc, Mutex},
@@ -200,9 +200,15 @@ impl From<ApiReminder> for Reminder {
 #[tokio::main]
 async fn main() {
     // remindy
-    let reminders_from_file =
-        serde_json::from_str(std::fs::read_to_string("reminders.json").unwrap().as_str()).unwrap();
-    let reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(reminders_from_file));
+    let reminders: Arc<Mutex<Vec<Reminder>>>;
+    if let Ok(reminders_from_file) = std::fs::read_to_string("reminders.json") {
+        let reminders_from_file = serde_json::from_str(reminders_from_file.as_str());
+        reminders = Arc::new(Mutex::new(reminders_from_file.unwrap()));
+    } else {
+        let mut file = File::create("foo.txt").unwrap();
+        file.write_all(b"[]").unwrap();
+        reminders = Arc::new(Mutex::new(vec![]));
+    }
 
     // axum
     let reminders_axum_clone = Arc::clone(&reminders);
