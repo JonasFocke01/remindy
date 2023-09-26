@@ -183,7 +183,7 @@ impl Display for Reminder {
                         time_left.whole_days().to_string().bright_red(),
                         " days".bright_red(),
                         ")".bright_green()
-                        )
+                    )
                 } else {
                     "".to_string()
                 },
@@ -404,10 +404,10 @@ async fn main() {
                                     reminder_type,
                                     duration,
                                     finish_time,
-                                    finish_notifications_send: true,
+                                    finish_notifications_send: false,
                                     delete_flag: false,
                                     restart_flag: false,
-                                })
+                                });
                             }
                         }
                         KeyCode::Char('r') => match read().unwrap() {
@@ -546,6 +546,19 @@ async fn main() {
             let serialized_reminders =
                 serde_json::to_string_pretty(&reminders.lock().unwrap().clone()).unwrap();
             write("reminders.json", serialized_reminders).unwrap();
+        }
+        if let Ok(mut reminders) = reminders.try_lock() {
+            let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+            if reminders
+                .iter()
+                .filter(|reminder| reminder.finish_time < now)
+                .collect::<Vec<&Reminder>>()
+                .len()
+                > 5
+                && reminders.get(0).unwrap().finish_time < now
+            {
+                reminders.remove(0);
+            }
         }
     }
 }
