@@ -1,7 +1,6 @@
 // TODO: Clean up code
 // TODO: Increase clippy protection
 // TODO: Play sound on reminder end
-// TODO: Make desktop notifications more noticable
 // TODO: Repair github pipeline
 // TODO: Propper config in .dotfiles, also, the reminder json should move there
 // TODO: Reminders should be moveable
