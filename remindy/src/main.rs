@@ -5,6 +5,7 @@
 // TODO: Repair github pipeline
 // TODO: Propper config in .dotfiles, also, the reminder json should move there
 // TODO: Reminders should be moveable
+// TODO: End reminder without deleting it
 
 use std::{
     fmt::Display,
