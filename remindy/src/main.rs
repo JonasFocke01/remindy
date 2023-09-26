@@ -345,7 +345,7 @@ async fn main() {
                                     if let Ok(mut reminders) = reminders.lock() {
                                         let reminder = reminders.get_mut(cursor_position).unwrap();
                                         reminder.name = name;
-                                        reminder.finish_notifications_send = false;
+                                        reminder.finish_notifications_send = true;
                                     }
                                     let _trash_bin = enable_raw_mode().is_ok();
                                 }
