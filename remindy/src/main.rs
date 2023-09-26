@@ -32,6 +32,8 @@ use crossterm::{
     terminal::enable_raw_mode,
 };
 
+use msgbox;
+
 use duration_string::DurationString;
 use notify_rust::Notification;
 use serde::{Deserialize, Serialize};
@@ -63,6 +65,7 @@ impl Reminder {
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
+            msgbox::create(self.name.as_str(), "", msgbox::IconType::Info);
             Notification::new()
                 .summary(self.name.as_str())
                 .urgency(notify_rust::Urgency::Critical)
@@ -80,10 +83,11 @@ impl Reminder {
     #[cfg(target_os = "macos")]
     fn display(&mut self, selected: bool) -> String {
         // TODO: Make UTC OFFSET a constant
-	    // TODO: Fix notifications for macos
+        // TODO: Fix notifications for macos
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
+            msgbox::create(self.name.as_str(), "", msgbox::IconType::Info);
             Notification::new()
                 .summary(self.name.as_str())
                 .show()
