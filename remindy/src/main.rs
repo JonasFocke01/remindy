@@ -292,6 +292,13 @@ async fn main() {
                     match event.code {
                         KeyCode::Char('c') => {
                             if event.modifiers.contains(KeyModifiers::CONTROL) {
+                                execute!(
+                                    stdout,
+                                    cursor::Show,
+                                    terminal::Clear(terminal::ClearType::All),
+                                    cursor::MoveTo(0, 0)
+                                )
+                                .unwrap();
                                 let _trash_bin = disable_raw_mode().is_ok();
                                 std::process::exit(0);
                             }
