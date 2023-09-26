@@ -4,6 +4,7 @@
 // TODO: Make desktop notifications more noticable
 // TODO: Repair github pipeline
 // TODO: Propper config in .dotfiles, also, the reminder json should move there
+// TODO: Reminders should be moveable
 
 use std::{
     fmt::Display,
@@ -82,6 +83,13 @@ impl Reminder {
 	    // TODO: Fix notifications for macos
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
+        if !time_left.is_positive() && !self.finish_notifications_send {
+            Notification::new()
+                .summary(self.name.as_str())
+                .show()
+                .unwrap();
+            self.finish_notifications_send = true;
+        }
         if selected {
             format!("{}{}{}", "[".blue(), self, "]".blue())
         } else {
@@ -218,7 +226,7 @@ async fn main() {
         let reminders_from_file = serde_json::from_str(reminders_from_file.as_str());
         reminders = Arc::new(Mutex::new(reminders_from_file.unwrap()));
     } else {
-        let mut file = File::create("foo.txt").unwrap();
+        let mut file = File::create("reminders.json").unwrap();
         file.write_all(b"[]").unwrap();
         reminders = Arc::new(Mutex::new(vec![]));
     }

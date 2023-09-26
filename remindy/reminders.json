@@ -1,0 +1,134 @@
+[
+  {
+    "name": "Feierabend",
+    "start_time": [
+      2023,
+      269,
+      11,
+      44,
+      7,
+      666237000,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Time",
+    "duration": [
+      18952,
+      333763000
+    ],
+    "finish_time": [
+      2023,
+      269,
+      17,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Mittag",
+    "start_time": [
+      2023,
+      269,
+      11,
+      44,
+      24,
+      847613000,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Time",
+    "duration": [
+      935,
+      152387000
+    ],
+    "finish_time": [
+      2023,
+      269,
+      12,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": true,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Anonym",
+    "start_time": [
+      2023,
+      269,
+      13,
+      58,
+      45,
+      180785000,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      2100,
+      0
+    ],
+    "finish_time": [
+      2023,
+      269,
+      14,
+      33,
+      45,
+      180785000,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Daily",
+    "start_time": [
+      2023,
+      269,
+      12,
+      0,
+      50,
+      925092000,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      0,
+      0
+    ],
+    "finish_time": [
+      2023,
+      269,
+      12,
+      0,
+      50,
+      925092000,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": true,
+    "delete_flag": false,
+    "restart_flag": false
+  }
+]
