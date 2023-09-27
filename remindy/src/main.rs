@@ -5,6 +5,7 @@
 // TODO: Propper config in .dotfiles, also, the reminder json should move there
 // TODO: Reminders should be moveable
 // TODO: End reminder without deleting it
+// TODO: Create reminder from library list
 
 use std::{
     fmt::Display,
