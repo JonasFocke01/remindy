@@ -1,16 +1,15 @@
-// TODO: Clean up code
-// TODO: Increase clippy protection
-// TODO: Play sound on reminder end
+// TODO: Clean up code (errorhandling, modules, clippy, ...)
 // TODO: Repair github pipeline
 // TODO: Propper config in .dotfiles, also, the reminder json should move there
-// TODO: Reminders should be moveable
-// TODO: End reminder without deleting it
 // TODO: Create reminder from library list
+// TODO: Add auto-refreshing reminders
+// TODO: reminders should be pauseable
+// TODO: reminders should autosort (by finish date)
 
 use std::{
     fmt::Display,
     fs::{write, File},
-    io::Write,
+    io::{BufReader, Write},
     net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::{Arc, Mutex},
 };
@@ -35,6 +34,7 @@ use crossterm::{
 
 use duration_string::DurationString;
 use notify_rust::Notification;
+use rodio::{Decoder, OutputStream, Source};
 use serde::{Deserialize, Serialize};
 
 use time::{format_description, Duration, OffsetDateTime, Time, UtcOffset};
@@ -61,16 +61,29 @@ impl Reminder {
     #[cfg(not(target_os = "macos"))]
     fn display(&mut self, selected: bool) -> String {
         // TODO: Make UTC OFFSET a constant
+
+        use rodio::Sink;
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
-            let _trash_bin = msgbox::create(self.name.as_str(), "", msgbox::IconType::Info);
             Notification::new()
                 .summary(self.name.as_str())
                 .urgency(notify_rust::Urgency::Critical)
                 .sound_name("alarm-clock_elapsed")
                 .show()
                 .unwrap();
+
+            // sound
+            let (_stream, audio_stream_handle) = OutputStream::try_default().unwrap();
+            let audio_file = BufReader::new(File::open("song.mp3").unwrap());
+            let sink = Sink::try_new(&audio_stream_handle).unwrap();
+            let audio_source = Decoder::new(audio_file).unwrap();
+            sink.append(audio_source);
+
+            let _trash_bin = msgbox::create(self.name.as_str(), "", msgbox::IconType::Info);
+
+            read().unwrap();
+
             self.finish_notifications_send = true;
         }
         if selected {
@@ -79,6 +92,7 @@ impl Reminder {
             format!(" {} ", self)
         }
     }
+
     #[cfg(target_os = "macos")]
     fn display(&mut self, selected: bool) -> String {
         // TODO: Make UTC OFFSET a constant
