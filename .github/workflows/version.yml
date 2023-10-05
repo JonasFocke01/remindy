@@ -1,0 +1,16 @@
+on: push
+name: Version bump
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    name: Cargo bump
+    steps:
+      - name: Git Clone
+        uses: sudosubin/git-clone-action@v1.0.1
+      - name: Bump version
+        uses: tj-actions/cargo-bump@v2
+      - name: commitlint-gh-action
+        uses: Person-93/commitlint-gh-action@v0.2.0
+      - name: action-push
+        uses: ludeeus/action-push@0.0.1
