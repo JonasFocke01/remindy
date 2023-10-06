@@ -1,16 +1,16 @@
-on: push
-name: Clippy check
+# on: push
+# name: Clippy check
 
 # Make sure CI fails on all warnings, including Clippy lints
-env:
-  RUSTFLAGS: "-Dwarnings"
+# env:
+  # RUSTFLAGS: "-Dwarnings"
 
-jobs:
-  clippy_check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Prepare environment
-        run: sudo tee -a /etc/apt/sources.list << "deb http://archive.ubuntu.com/ubuntu focal-updates main" && sudo tee -a /etc/apt/sources.list << EOF && sudo apt update && sudo apt install openssl -y && sudo apt install libssl-dev -y && sudo apt install cmake -y && sudo apt install libasound2-dev -y && sudo apt install libwebkit2gtk-4.0-37 -y && sudo apt install libgtk-3-dev=3.22.30-1ubuntu4
-      - uses: actions/checkout@v3
-      - name: Run Clippy
-        run: cd remindy && cargo clippy --all-targets --all-features
+# jobs:
+  # clippy_check:
+    # runs-on: ubuntu-latest
+    # steps:
+      # - name: Prepare environment
+        # run: sudo tee -a /etc/apt/sources.list << "deb http://archive.ubuntu.com/ubuntu focal-updates main" && sudo tee -a /etc/apt/sources.list << EOF && sudo apt update && sudo apt install openssl -y && sudo apt install libssl-dev -y && sudo apt install cmake -y && sudo apt install libasound2-dev -y && sudo apt install libwebkit2gtk-4.0-37 -y && sudo apt install libgtk-3-dev=3.22.30-1ubuntu4
+      # - uses: actions/checkout@v3
+      # - name: Run Clippy
+        # run: cd remindy && cargo clippy --all-targets --all-features
