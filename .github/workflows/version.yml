@@ -9,6 +9,6 @@ jobs:
       - name: Git Clone
         uses: sudosubin/git-clone-action@v1.0.1
       - name: Bump version
-        run: cargo install cargo-bump && cd remindy && cargo bump && git commit -m "Bump version"
+        run: cargo install cargo-bump && cd remindy && cargo bump && git git config --global user.name "pipeline" && git config --global user.email "pipeline@pipeline.com" && git commit -m "Bump version"
       - name: action-push
         uses: ludeeus/action-push@0.0.1
