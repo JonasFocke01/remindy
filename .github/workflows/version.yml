@@ -10,5 +10,10 @@ jobs:
         uses: sudosubin/git-clone-action@v1.0.1
       - name: Bump version
         run: cargo install cargo-bump && cd remindy && cargo bump && git config --global user.name "pipeline" && git config --global user.email "pipeline@pipeline.com" && git commit -am "Bump version"
-      - name: action-push
-        run: git push
+      - name: Git Push Action
+        # You may pin to the exact commit or the version.
+        # uses: x-actions/git-push@ba04e59cd92b579c1df53fa8d398bec56f310906
+        uses: x-actions/git-push@v1.0
+        with:
+          GITHUB_EMAIL: "pipeline@pipeline.com"
+          GITHUB_USERNAME: "pipeline"
