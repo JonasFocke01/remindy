@@ -1,72 +1,6 @@
 [
   {
-    "name": "Feierabend",
-    "start_time": [
-      2023,
-      269,
-      11,
-      44,
-      7,
-      666237000,
-      2,
-      0,
-      0
-    ],
-    "reminder_type": "Time",
-    "duration": [
-      18952,
-      333763000
-    ],
-    "finish_time": [
-      2023,
-      269,
-      17,
-      0,
-      0,
-      0,
-      2,
-      0,
-      0
-    ],
-    "finish_notifications_send": true,
-    "delete_flag": false,
-    "restart_flag": false
-  },
-  {
-    "name": "Mittag",
-    "start_time": [
-      2023,
-      269,
-      11,
-      44,
-      24,
-      847613000,
-      2,
-      0,
-      0
-    ],
-    "reminder_type": "Time",
-    "duration": [
-      935,
-      152387000
-    ],
-    "finish_time": [
-      2023,
-      269,
-      12,
-      0,
-      0,
-      0,
-      2,
-      0,
-      0
-    ],
-    "finish_notifications_send": true,
-    "delete_flag": false,
-    "restart_flag": false
-  },
-  {
-    "name": "Anonym",
+    "name": "meem",
     "start_time": [
       2023,
       269,
@@ -113,17 +47,17 @@
     ],
     "reminder_type": "Duration",
     "duration": [
-      0,
+      10,
       0
     ],
     "finish_time": [
       2023,
-      269,
-      12,
+      279,
+      19,
+      3,
+      15,
+      571177120,
       0,
-      50,
-      925092000,
-      2,
       0,
       0
     ],
@@ -156,6 +90,72 @@
       52,
       22,
       152031006,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": true,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "meem",
+    "start_time": [
+      2023,
+      279,
+      18,
+      53,
+      2,
+      458850083,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      3600,
+      0
+    ],
+    "finish_time": [
+      2023,
+      279,
+      19,
+      53,
+      2,
+      458797933,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": true,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "foof",
+    "start_time": [
+      2023,
+      279,
+      21,
+      2,
+      43,
+      518292974,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      10,
+      0
+    ],
+    "finish_time": [
+      2023,
+      279,
+      21,
+      2,
+      53,
+      518263954,
       2,
       0,
       0

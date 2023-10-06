@@ -13,6 +13,7 @@ use colored::Colorize;
 
 use crate::reminder::{ApiReminder, Reminder};
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 // TODO: Fix status (RunninOk is displayed, despite not being okay)
 pub enum ApiStatus {
@@ -24,7 +25,7 @@ pub enum ApiStatus {
 
 impl ApiStatus {
     pub fn as_info_string(&self) -> String {
-        let result = format!("{:?}", self);
+        let result = format!("{self:?}");
         match self {
             Self::RunningOk => format!("{}", result.bright_green()),
             Self::Starting => format!("{}", result.green()),
@@ -34,6 +35,7 @@ impl ApiStatus {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub fn spawn_api(reminders: &Arc<Mutex<Vec<Reminder>>>, port: u16) -> Arc<Mutex<ApiStatus>> {
     let status = Arc::new(Mutex::new(ApiStatus::Stopped));
     let return_status = Arc::clone(&status);

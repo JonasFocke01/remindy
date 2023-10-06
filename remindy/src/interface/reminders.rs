@@ -22,7 +22,7 @@ pub fn build_reminder_list(
                     if i == cursor_position {
                         String::from("]")
                     } else {
-                        "".to_string()
+                        String::new()
                     },
                 )
                 .as_str()

@@ -33,7 +33,7 @@ pub fn build_status_box(api_status: &Arc<Mutex<ApiStatus>>) -> String {
                 api_status.as_info_string()
             )
             .as_str(),
-        )
+        );
     }
     result.push_str(
         format!(

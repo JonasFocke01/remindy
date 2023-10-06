@@ -1,13 +1,11 @@
-use std::{
-    fmt::Display,
-    fs::write,
-};
+use std::{fmt::Display, fs::write};
 
-        use std::{fs::File, io::BufReader};
+use std::{fs::File, io::BufReader};
 
-        use crossterm::event::read;
-        use notify_rust::Notification;
-        use rodio::{Decoder, OutputStream, Sink};
+use anyhow::Result;
+use crossterm::event::read;
+use notify_rust::Notification;
+use rodio::{Decoder, OutputStream, Sink};
 
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
@@ -15,6 +13,7 @@ use time::{format_description, Duration, OffsetDateTime, UtcOffset};
 
 use crate::map_range;
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Clone, Serialize, Deserialize)]
 pub enum ReminderType {
     Duration,
@@ -39,9 +38,9 @@ impl Reminder {
         reminder_type: ReminderType,
         duration: Duration,
         finish_time: OffsetDateTime,
-    ) -> Self {
-        let start_time = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
-        Self {
+    ) -> Result<Self> {
+        let start_time = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0)?);
+        Ok(Self {
             name,
             start_time,
             reminder_type,
@@ -50,28 +49,13 @@ impl Reminder {
             finish_notifications_send: false,
             delete_flag: false,
             restart_flag: false,
-        }
-    }
-    pub fn name(&self) -> &str {
-        &self.name
+        })
     }
     pub fn set_name(&mut self, name: String) {
         self.name = name;
     }
-    pub fn start_time(&self) -> OffsetDateTime {
-        self.start_time
-    }
-    pub fn set_start_time(&mut self, start_time: OffsetDateTime) {
-        self.start_time = start_time;
-    }
-    pub fn reminder_type(&self) -> &ReminderType {
-        &self.reminder_type
-    }
     pub fn set_reminder_type(&mut self, reminder_type: ReminderType) {
         self.reminder_type = reminder_type;
-    }
-    pub fn duration(&self) -> Duration {
-        self.duration
     }
     pub fn set_duration(&mut self, duration: Duration) {
         self.duration = duration;
@@ -81,9 +65,6 @@ impl Reminder {
     }
     pub fn set_finish_time(&mut self, finish_time: OffsetDateTime) {
         self.finish_time = finish_time;
-    }
-    pub fn finish_notifications_send(&self) -> bool {
-        self.finish_notifications_send
     }
     pub fn set_finish_notifications_send(&mut self, flag: bool) {
         self.finish_notifications_send = flag;
@@ -104,29 +85,40 @@ impl Reminder {
     pub fn play_alert_if_needed(&mut self) {
         // TODO: Make UTC OFFSET a constant
 
-        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        let now = OffsetDateTime::now_utc();
+        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
+            now.to_offset(offset);
+        }
+        #[allow(clippy::arithmetic_side_effects)]
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
-            Notification::new()
+            self.finish_notifications_send = true;
+
+            let _trash_bin = Notification::new()
                 .summary(self.name.as_str())
                 .urgency(notify_rust::Urgency::Critical)
                 .sound_name("alarm-clock_elapsed")
-                .show()
-                .unwrap();
+                .show();
 
             // sound
-            let (_stream, audio_stream_handle) = OutputStream::try_default().unwrap();
-            let audio_file = BufReader::new(File::open("song.mp3").unwrap());
-            let sink = Sink::try_new(&audio_stream_handle).unwrap();
-            let audio_source = Decoder::new(audio_file).unwrap();
-            sink.append(audio_source);
-            sink.set_volume(0.7);
+            if let Ok((_stream, audio_stream_handle)) = OutputStream::try_default() {
+                let Ok(file) = File::open("song.mp3") else {
+                    return;
+                };
+                let audio_buf = BufReader::new(file);
+                let Ok(sink) = Sink::try_new(&audio_stream_handle) else {
+                    return;
+                };
+                let Ok(audio_source) = Decoder::new(audio_buf) else {
+                    return;
+                };
+                sink.append(audio_source);
+                sink.set_volume(0.7);
 
-            let _trash_bin = msgbox::create(self.name.as_str(), "", msgbox::IconType::Info);
+                let _trash_bin = msgbox::create(self.name.as_str(), "", msgbox::IconType::Info);
 
-            read().unwrap();
-
-            self.finish_notifications_send = true;
+                let _trash_bin = read();
+            }
         }
     }
 
@@ -145,13 +137,17 @@ impl Reminder {
         }
     }
     pub fn restart(&mut self) {
-        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        let now = OffsetDateTime::now_utc();
+        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
+            now.to_offset(offset);
+        }
         self.start_time = now;
+        #[allow(clippy::arithmetic_side_effects)]
         match self.reminder_type {
             ReminderType::Time => {
                 self.finish_time = self.finish_time.replace_date(now.date());
                 if self.finish_time < now {
-                    self.finish_time += Duration::days(1)
+                    self.finish_time += Duration::days(1);
                 }
                 self.duration = self.finish_time - now;
             }
@@ -164,7 +160,11 @@ impl Reminder {
         self.finish_notifications_send = false;
     }
     pub fn snooze(&mut self) {
-        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        let now = OffsetDateTime::now_utc();
+        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
+            now.to_offset(offset);
+        }
+        #[allow(clippy::arithmetic_side_effects)]
         if self.finish_time < now {
             self.finish_time += Duration::minutes(5);
             self.finish_notifications_send = false;
@@ -174,25 +174,43 @@ impl Reminder {
     }
     pub fn from_file(filename: &str) -> Option<Vec<Reminder>> {
         if let Ok(reminders_from_file) = std::fs::read_to_string(filename) {
-            let reminders_from_file: Result<Vec<Reminder>, _> =
-                serde_json::from_str(reminders_from_file.as_str());
-            return Some(reminders_from_file.unwrap());
+            let Ok(reminders_from_file) =
+                serde_json::from_str::<Vec<Reminder>>(reminders_from_file.as_str())
+            else {
+                return None;
+            };
+            return Some(reminders_from_file);
         }
         None
     }
-    pub fn to_file(filename: &str, reminders: Vec<Reminder>) {
-        let serialized_reminders =
-            serde_json::to_string_pretty(&reminders).unwrap();
-        write(filename, serialized_reminders).unwrap();
+    pub fn to_file(filename: &str, reminders: &Vec<Reminder>) {
+        let Ok(serialized_reminders) = serde_json::to_string_pretty(reminders) else {
+            return;
+        };
+        let _trash_bin = write(filename, serialized_reminders);
     }
 }
 impl Display for Reminder {
+    #[allow(clippy::arithmetic_side_effects)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        let now = OffsetDateTime::now_utc();
+        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
+            now.to_offset(offset);
+        }
         let time_left = self.finish_time - now;
-        let format =
-            format_description::parse("[hour]:[minute]:[second] [day].[month].[year]").unwrap();
+        let Ok(format) = format_description::parse("[hour]:[minute]:[second] [day].[month].[year]")
+        else {
+            return Err(std::fmt::Error);
+        };
+        let Ok(finish_time) = self.finish_time.format(&format) else {
+            return Err(std::fmt::Error);
+        };
         if time_left.is_positive() {
+            #[allow(
+                clippy::cast_sign_loss,
+                clippy::cast_possible_truncation,
+                clippy::cast_precision_loss
+            )]
             let percent_finished = map_range(
                 (
                     self.start_time.unix_timestamp() as f64,
@@ -232,25 +250,23 @@ impl Display for Reminder {
                 progressbar.bright_red(),
                 "]".bright_green(),
                 "(".bright_green(),
-                self.finish_time.format(&format).unwrap().bright_red(),
+                finish_time.bright_red(),
                 ")".bright_green(),
                 if time_left.whole_days() > 0 {
                     format!(
-                        "{}{}{}{}{}",
-                        "(".bright_green(),
+                        "{}{}{}",
                         "+".bright_red(),
                         time_left.whole_days().to_string().bright_red(),
                         " days".bright_red(),
-                        ")".bright_green()
                     )
                 } else {
-                    "".to_string()
+                    String::new()
                 },
             )
         } else {
             write!(
                 f,
-                "{:>10} {:0>2}{}{:0>2}{}{:0>2} {}{:<21}{} {}{}{}  ",
+                "{:>10}          {}{:<21}{} {}{}{}  ",
                 if self.delete_flag {
                     self.name.clone().bright_red()
                 } else if self.restart_flag {
@@ -258,36 +274,44 @@ impl Display for Reminder {
                 } else {
                     self.name.clone().green()
                 },
-                (time_left.whole_hours() - time_left.whole_days() * 24)
-                    .clamp(0, i64::MAX)
-                    .to_string()
-                    .red(),
-                ":".red(),
-                (time_left.whole_minutes() - time_left.whole_hours() * 60)
-                    .clamp(0, i64::MAX)
-                    .to_string()
-                    .red(),
-                ":".red(),
-                (time_left.whole_seconds() - time_left.whole_minutes() * 60)
-                    .clamp(0, i64::MAX)
-                    .to_string()
-                    .red(),
                 "[".bright_green(),
                 "========DONE=========".yellow(),
                 "]".bright_green(),
                 "(".bright_green(),
-                self.finish_time.format(&format).unwrap().bright_red(),
+                finish_time.bright_red(),
                 ")".bright_green(),
             )
         }
     }
 }
+impl Default for Reminder {
+    fn default() -> Self {
+        let now = OffsetDateTime::now_utc();
+        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
+            now.to_offset(offset);
+        }
+        Self {
+            name: String::new(),
+            start_time: now,
+            reminder_type: ReminderType::Time,
+            duration: Duration::new(0, 0),
+            finish_time: now,
+            finish_notifications_send: true,
+            delete_flag: false,
+            restart_flag: false,
+        }
+    }
+}
 impl From<ApiReminder> for Reminder {
     fn from(value: ApiReminder) -> Self {
-        let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
+        let now = OffsetDateTime::now_utc();
+        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
+            now.to_offset(offset);
+        }
         Self {
             name: value.name,
             start_time: now,
+            #[allow(clippy::arithmetic_side_effects)]
             duration: now - value.finish_time,
             finish_time: value.finish_time,
             finish_notifications_send: false,
@@ -299,6 +323,7 @@ impl From<ApiReminder> for Reminder {
 }
 
 #[derive(Clone, Deserialize)]
+#[allow(clippy::module_name_repetitions)]
 pub struct ApiReminder {
     name: String,
     finish_time: OffsetDateTime,
