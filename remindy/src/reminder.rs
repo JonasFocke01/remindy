@@ -1,8 +1,13 @@
 use std::{
     fmt::Display,
     fs::write,
-    sync::{Arc, Mutex},
 };
+
+        use std::{fs::File, io::BufReader};
+
+        use crossterm::event::read;
+        use notify_rust::Notification;
+        use rodio::{Decoder, OutputStream, Sink};
 
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
@@ -96,14 +101,9 @@ impl Reminder {
         self.restart_flag = flag;
     }
     #[cfg(not(target_os = "macos"))]
-    pub fn display(&mut self, selected: bool) -> String {
+    pub fn play_alert_if_needed(&mut self) {
         // TODO: Make UTC OFFSET a constant
 
-        use std::{fs::File, io::BufReader};
-
-        use crossterm::event::read;
-        use notify_rust::Notification;
-        use rodio::{Decoder, OutputStream, Sink};
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
@@ -128,15 +128,10 @@ impl Reminder {
 
             self.finish_notifications_send = true;
         }
-        if selected {
-            format!("{}{}{}", "[".blue(), self, "]".blue())
-        } else {
-            format!(" {} ", self)
-        }
     }
 
     #[cfg(target_os = "macos")]
-    fn display(&mut self, selected: bool) -> String {
+    fn play_alert_if_needed(&mut self) {
         // TODO: Make UTC OFFSET a constant
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
@@ -147,11 +142,6 @@ impl Reminder {
                 .show()
                 .unwrap();
             self.finish_notifications_send = true;
-        }
-        if selected {
-            format!("{}{}{}", "[".blue(), self, "]".blue())
-        } else {
-            format!(" {} ", self)
         }
     }
     pub fn restart(&mut self) {

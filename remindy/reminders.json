@@ -28,7 +28,7 @@
       0,
       0
     ],
-    "finish_notifications_send": false,
+    "finish_notifications_send": true,
     "delete_flag": false,
     "restart_flag": false
   },
@@ -94,7 +94,7 @@
       0,
       0
     ],
-    "finish_notifications_send": false,
+    "finish_notifications_send": true,
     "delete_flag": false,
     "restart_flag": false
   },
@@ -123,6 +123,39 @@
       0,
       50,
       925092000,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": true,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "kaak",
+    "start_time": [
+      2023,
+      279,
+      17,
+      52,
+      6,
+      672143011,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      3,
+      0
+    ],
+    "finish_time": [
+      2023,
+      279,
+      17,
+      52,
+      22,
+      152031006,
       2,
       0,
       0
