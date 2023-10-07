@@ -187,12 +187,12 @@ pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<M
                 .len()
                 > 5
                 && reminders
-                    .get(0)
+                    .last()
                     .map_or(Reminder::default(), Reminder::clone)
                     .finish_time()
                     < now
             {
-                reminders.remove(0);
+                let _trash_bin = reminders.pop();
             }
             Reminder::to_file("reminders.json", &reminders);
         }
