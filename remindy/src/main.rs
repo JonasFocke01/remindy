@@ -1,5 +1,3 @@
-// TODO: Clean up code (errorhandling, modules, clippy, ...)
-// TODO: Repair github pipeline
 // TODO: Propper config in .dotfiles, also, the reminder json should move there
 // TODO: Create reminder from library list
 // TODO: Add auto-refreshing reminders
