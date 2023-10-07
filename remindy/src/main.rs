@@ -1,6 +1,5 @@
 // TODO: Propper config in .dotfiles, also, the reminder json should move there
 // TODO: Add auto-refreshing reminders
-// TODO: reminders should be pauseable
 
 use std::{
     fs::File,
