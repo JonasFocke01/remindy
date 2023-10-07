@@ -7,6 +7,7 @@ use reminders::build_reminder_list;
 pub mod past_event;
 use past_event::PastEvent;
 use std::{
+    cmp::Ordering,
     io::{Stdout, Write},
     sync::{Arc, Mutex},
 };
@@ -194,6 +195,13 @@ pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<M
             {
                 let _trash_bin = reminders.pop();
             }
+            reminders.sort_by(|a, b| {
+                if a.finish_time().cmp(&b.finish_time()) == Ordering::Less {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
+                }
+            });
             Reminder::to_file("reminders.json", &reminders);
         }
     }
