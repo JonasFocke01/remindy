@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
 use colored::Colorize;
-use time::{OffsetDateTime, UtcOffset};
+use time::OffsetDateTime;
 
-use crate::reminder::Reminder;
+use crate::reminder::{Reminder, OFFSET};
 
 pub enum PastEvent {
     ReminderEnded(Reminder),
@@ -19,10 +19,7 @@ impl Display for PastEvent {
         match self {
             #[allow(clippy::arithmetic_side_effects)]
             PastEvent::ReminderEnded(reminder) => {
-                let now = OffsetDateTime::now_utc();
-                if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-                    now.to_offset(offset);
-                }
+                let now = OffsetDateTime::now_utc().to_offset(OFFSET);
                 let finished_ago = now - reminder.finish_time();
                 write!(
                     f,

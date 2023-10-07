@@ -7,9 +7,9 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use duration_string::DurationString;
-use time::{format_description, Duration, OffsetDateTime, Time, UtcOffset};
+use time::{format_description, Duration, OffsetDateTime, Time};
 
-use crate::reminder::{Reminder, ReminderType};
+use crate::reminder::{Reminder, ReminderType, OFFSET};
 
 use super::{past_event::PastEvent, InputAction};
 
@@ -19,9 +19,6 @@ use super::{past_event::PastEvent, InputAction};
 /// Otherwise, this blocks for one second and returns.
 pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputAction {
     if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
-        let Ok(offset) = UtcOffset::from_hms(2, 0, 0) else {
-            return InputAction::None;
-        };
         // TODO: This format should be a const
         let Ok(format) = format_description::parse("[hour]:[minute]") else {
             return InputAction::None;
@@ -52,8 +49,8 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                         return InputAction::None;
                     };
                     time_input = time_input.replace('\n', "");
-                    let now = OffsetDateTime::now_utc().to_offset(offset);
-                    let mut finish_time = OffsetDateTime::now_utc().to_offset(offset);
+                    let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+                    let mut finish_time = OffsetDateTime::now_utc().to_offset(OFFSET);
                     let reminder_type: ReminderType;
                     #[allow(unused_assignments)]
                     let mut duration: Duration = Duration::new(0, 0);
@@ -82,12 +79,12 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                         reminder_type = ReminderType::Duration;
                     }
 
-                    if let Ok(reminder) = Reminder::new(name, reminder_type, duration, finish_time)
-                    {
-                        InputAction::NewReminder(reminder)
-                    } else {
-                        InputAction::None
-                    }
+                    InputAction::NewReminder(Reminder::new(
+                        name,
+                        reminder_type,
+                        duration,
+                        finish_time,
+                    ))
                 }
                 KeyCode::Char('r') => read_re_mode_input(stdout),
                 KeyCode::Char('k') => InputAction::CursorUp,
@@ -123,14 +120,8 @@ fn read_re_mode_input(stdout: &mut Stdout) -> InputAction {
                 let mut time_input = String::new();
                 let _trash_bin = stdin().read_line(&mut time_input);
                 time_input = time_input.replace('\n', "");
-                let now = OffsetDateTime::now_utc();
-                if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-                    now.to_offset(offset);
-                }
-                let mut finish_time = OffsetDateTime::now_utc();
-                if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-                    finish_time.to_offset(offset);
-                }
+                let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+                let mut finish_time = OffsetDateTime::now_utc().to_offset(OFFSET);
 
                 let _trash_bin = enable_raw_mode().is_ok();
                 #[allow(clippy::useless_conversion)]

@@ -16,9 +16,9 @@ use crossterm::{
     cursor, execute,
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use time::{OffsetDateTime, UtcOffset};
+use time::OffsetDateTime;
 
-use crate::{api::ApiStatus, reminder::Reminder};
+use crate::{api::ApiStatus, reminder::{Reminder, OFFSET}};
 
 use self::key_reader::TimeObject;
 
@@ -177,10 +177,7 @@ pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<M
             &mut last_event,
         );
         if let Ok(mut reminders) = reminders.try_lock() {
-            let now = OffsetDateTime::now_utc();
-            if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-                now.to_offset(offset);
-            }
+            let now = OffsetDateTime::now_utc().to_offset(OFFSET);
             if reminders
                 .iter()
                 .filter(|reminder| reminder.finish_time() < now)

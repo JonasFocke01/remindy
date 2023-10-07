@@ -2,7 +2,6 @@ use std::{fmt::Display, fs::write};
 
 use std::{fs::File, io::BufReader};
 
-use anyhow::Result;
 use crossterm::event::read;
 use notify_rust::Notification;
 use rodio::{Decoder, OutputStream, Sink};
@@ -19,6 +18,12 @@ pub enum ReminderType {
     Duration,
     Time,
 }
+
+pub const OFFSET: UtcOffset = if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
+    offset
+} else {
+    panic!("Cant compute UtcOffset")
+};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Reminder {
@@ -38,9 +43,9 @@ impl Reminder {
         reminder_type: ReminderType,
         duration: Duration,
         finish_time: OffsetDateTime,
-    ) -> Result<Self> {
-        let start_time = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0)?);
-        Ok(Self {
+    ) -> Self {
+        let start_time = OffsetDateTime::now_utc().to_offset(OFFSET);
+        Self {
             name,
             start_time,
             reminder_type,
@@ -49,7 +54,7 @@ impl Reminder {
             finish_notifications_send: false,
             delete_flag: false,
             restart_flag: false,
-        })
+        }
     }
     pub fn name(&self) -> &str {
         self.name.as_str()
@@ -86,12 +91,8 @@ impl Reminder {
     }
     #[cfg(not(target_os = "macos"))]
     pub fn play_alert_if_needed(&mut self) -> bool {
-        // TODO: Make UTC OFFSET a constant
 
-        let now = OffsetDateTime::now_utc();
-        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-            now.to_offset(offset);
-        }
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         #[allow(clippy::arithmetic_side_effects)]
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
@@ -130,7 +131,6 @@ impl Reminder {
 
     #[cfg(target_os = "macos")]
     fn play_alert_if_needed(&mut self) {
-        // TODO: Make UTC OFFSET a constant
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
@@ -143,10 +143,7 @@ impl Reminder {
         }
     }
     pub fn restart(&mut self) {
-        let now = OffsetDateTime::now_utc();
-        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-            now.to_offset(offset);
-        }
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         self.start_time = now;
         #[allow(clippy::arithmetic_side_effects)]
         match self.reminder_type {
@@ -166,10 +163,7 @@ impl Reminder {
         self.finish_notifications_send = false;
     }
     pub fn snooze(&mut self) {
-        let now = OffsetDateTime::now_utc();
-        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-            now.to_offset(offset);
-        }
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         #[allow(clippy::arithmetic_side_effects)]
         if self.finish_time < now {
             self.finish_time += Duration::minutes(5);
@@ -199,10 +193,7 @@ impl Reminder {
 impl Display for Reminder {
     #[allow(clippy::arithmetic_side_effects)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let now = OffsetDateTime::now_utc();
-        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-            now.to_offset(offset);
-        }
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         let time_left = self.finish_time - now;
         let Ok(format) = format_description::parse("[hour]:[minute]:[second] [day].[month].[year]")
         else {
@@ -292,10 +283,7 @@ impl Display for Reminder {
 }
 impl Default for Reminder {
     fn default() -> Self {
-        let now = OffsetDateTime::now_utc();
-        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-            now.to_offset(offset);
-        }
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         Self {
             name: String::new(),
             start_time: now,
@@ -310,10 +298,7 @@ impl Default for Reminder {
 }
 impl From<ApiReminder> for Reminder {
     fn from(value: ApiReminder) -> Self {
-        let now = OffsetDateTime::now_utc();
-        if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
-            now.to_offset(offset);
-        }
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         Self {
             name: value.name,
             start_time: now,
