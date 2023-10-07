@@ -172,9 +172,9 @@ fn read_re_mode_input(stdout: &mut Stdout) -> InputAction {
                     let Ok(duration) = d.try_into() else {
                         return InputAction::None;
                     };
+                    #[allow(clippy::arithmetic_side_effects)]
                     InputAction::RetimeReminder(TimeObject {
                         reminder_type: ReminderType::Duration,
-                        #[allow(clippy::arithmetic_side_effects)]
                         finish_time: now + d,
                         duration,
                     })
