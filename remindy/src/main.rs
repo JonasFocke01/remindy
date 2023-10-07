@@ -2,7 +2,6 @@
 // TODO: Create reminder from library list
 // TODO: Add auto-refreshing reminders
 // TODO: reminders should be pauseable
-// TODO: reminders should autosort (by finish date)
 
 use std::{
     fs::File,
