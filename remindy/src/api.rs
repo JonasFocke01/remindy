@@ -15,11 +15,11 @@ use crate::reminder::{ApiReminder, Reminder};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
-// TODO: Fix status (RunninOk is displayed, despite not being okay)
 pub enum ApiStatus {
     RunningOk,
     Starting,
     FailedToBindToPort,
+    UnknownServerError,
     Stopped,
 }
 
@@ -29,7 +29,7 @@ impl ApiStatus {
         match self {
             Self::RunningOk => format!("{}", result.bright_green()),
             Self::Starting => format!("{}", result.green()),
-            Self::FailedToBindToPort => format!("{}", result.red()),
+            Self::FailedToBindToPort | Self::UnknownServerError => format!("{}", result.red()),
             Self::Stopped => format!("{}", result.bright_red()),
         }
     }
@@ -49,23 +49,23 @@ pub fn spawn_api(reminders: &Arc<Mutex<Vec<Reminder>>>, port: u16) -> Arc<Mutex<
             .route("/reminder", post(add_reminder))
             .with_state(reminders_axum_clone);
 
-        if let Ok(mut status) = status.lock() {
-            // This is a lie, because we cant interfere with the awaiting axum server
-            *status = ApiStatus::RunningOk;
-        }
-        if axum::Server::bind(&SocketAddr::new(
+        if let Ok(server) = axum::Server::try_bind(&SocketAddr::new(
             IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             port,
-        ))
-        .serve(app.into_make_service())
-        .await
-        .is_err()
-        {
+        )) {
             if let Ok(mut status) = status.lock() {
-                *status = ApiStatus::FailedToBindToPort;
+                // This is a lie, because we cant interfere with the awaiting axum server
+                *status = ApiStatus::RunningOk;
+            }
+            if server.serve(app.into_make_service()).await.is_ok() {
+                if let Ok(mut status) = status.lock() {
+                    *status = ApiStatus::Stopped;
+                }
+            } else if let Ok(mut status) = status.lock() {
+                *status = ApiStatus::UnknownServerError;
             }
         } else if let Ok(mut status) = status.lock() {
-            *status = ApiStatus::Stopped;
+            *status = ApiStatus::FailedToBindToPort;
         }
     });
     return_status
