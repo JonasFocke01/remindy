@@ -20,7 +20,6 @@ use super::{past_event::PastEvent, InputAction};
 #[allow(clippy::too_many_lines)]
 pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputAction {
     if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
-        // TODO: This format should be a const
         let Ok(format) = format_description::parse("[hour]:[minute]") else {
             return InputAction::None;
         };
@@ -117,7 +116,6 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                     InputAction::None
                 }
                 KeyCode::Esc => InputAction::ResetReminderFlags,
-                // TODO: pause reminder
                 _ => InputAction::None,
             };
         }
@@ -151,7 +149,6 @@ fn read_re_mode_input(stdout: &mut Stdout) -> InputAction {
                 let _trash_bin = enable_raw_mode().is_ok();
                 #[allow(clippy::useless_conversion)]
                 if time_input.chars().all(|e| e.is_ascii_digit() || e == ':') {
-                    // TODO: format wants to be a const
                     let Ok(format) = &format_description::parse("[hour]:[minute]") else {
                         return InputAction::None;
                     };
