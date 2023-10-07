@@ -2,8 +2,8 @@
 
 cd remindy
 
-cargo-deb
+cargo install cargo-deb
 
-sudo dpkg -i target/debian/remindy_*_amd64.deb
+cargo-deb --install
 
 cd ..
