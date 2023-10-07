@@ -86,6 +86,7 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                         finish_time,
                     ))
                 }
+                KeyCode::Char(' ') => InputAction::PauseReminder,
                 KeyCode::Char('r') => read_re_mode_input(stdout),
                 KeyCode::Char('k') => InputAction::CursorUp,
                 KeyCode::Char('j') => InputAction::CursorDown,

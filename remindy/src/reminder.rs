@@ -25,6 +25,7 @@ pub const OFFSET: UtcOffset = if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
     panic!("Cant compute UtcOffset")
 };
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Reminder {
     name: String,
@@ -35,6 +36,7 @@ pub struct Reminder {
     finish_notifications_send: bool,
     delete_flag: bool,
     restart_flag: bool,
+    paused: bool,
 }
 
 impl Reminder {
@@ -54,6 +56,7 @@ impl Reminder {
             finish_notifications_send: false,
             delete_flag: false,
             restart_flag: false,
+            paused: false,
         }
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -69,6 +72,7 @@ impl Reminder {
                 finish_notifications_send: false,
                 delete_flag: false,
                 restart_flag: false,
+                paused: false,
             }
         } else {
             Self {
@@ -80,6 +84,7 @@ impl Reminder {
                 finish_notifications_send: false,
                 delete_flag: false,
                 restart_flag: false,
+                paused: false,
             }
         }
     }
@@ -115,6 +120,15 @@ impl Reminder {
     }
     pub fn set_restart_flag(&mut self, flag: bool) {
         self.restart_flag = flag;
+    }
+    #[allow(clippy::arithmetic_side_effects)]
+    pub fn push_back_end_time_if_paused(&mut self, push_back_amount: Duration) {
+        if self.paused {
+            self.finish_time += push_back_amount;
+        }
+    }
+    pub fn toggle_pause(&mut self) {
+        self.paused = !self.paused;
     }
     #[cfg(not(target_os = "macos"))]
     pub fn play_alert_if_needed(&mut self) -> bool {
@@ -270,7 +284,11 @@ impl Display for Reminder {
                     .to_string()
                     .bright_red(),
                 "[".bright_green(),
-                progressbar.bright_red(),
+                if self.paused {
+                    progressbar.blue()
+                } else {
+                    progressbar.bright_red()
+                },
                 "]".bright_green(),
                 "(".bright_green(),
                 finish_time.bright_red(),
@@ -319,6 +337,7 @@ impl Default for Reminder {
             finish_notifications_send: true,
             delete_flag: false,
             restart_flag: false,
+            paused: false,
         }
     }
 }
@@ -335,6 +354,7 @@ impl From<ApiReminder> for Reminder {
             delete_flag: false,
             restart_flag: false,
             reminder_type: ReminderType::Time,
+            paused: false,
         }
     }
 }

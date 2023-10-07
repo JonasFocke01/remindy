@@ -12,6 +12,7 @@ pub enum PastEvent {
     ReminderEdited(Reminder),
     ReminderDeleted(Reminder),
     ReminderSnooze(Reminder),
+    ReminderPause(Reminder),
     None,
 }
 impl Display for PastEvent {
@@ -55,6 +56,9 @@ impl Display for PastEvent {
             }
             PastEvent::ReminderSnooze(reminder) => {
                 write!(f, "{} {}", reminder.name().blue(), "snoozed".blue())
+            }
+            PastEvent::ReminderPause(reminder) => {
+                write!(f, "{} {}", reminder.name().blue(), "paused/unpaused".blue())
             }
             PastEvent::None => write!(f, "{}", " ".black()),
         }

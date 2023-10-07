@@ -18,7 +18,10 @@ use crossterm::{
 };
 use time::OffsetDateTime;
 
-use crate::{api::ApiStatus, reminder::{Reminder, OFFSET}};
+use crate::{
+    api::ApiStatus,
+    reminder::{Reminder, OFFSET},
+};
 
 use self::key_reader::TimeObject;
 
@@ -33,10 +36,12 @@ pub enum InputAction {
     ResetReminderFlags,
     SnoozeReminder,
     RetimeReminder(TimeObject),
+    PauseReminder,
     None,
 }
 
 impl InputAction {
+    #[allow(clippy::too_many_lines)]
     fn perform(
         &self,
         stdout: &mut Stdout,
@@ -138,6 +143,15 @@ impl InputAction {
                     *last_event = PastEvent::ReminderEdited(reminder.clone());
                 }
             }
+            InputAction::PauseReminder => {
+                if let Ok(mut reminders) = reminders.lock() {
+                    let Some(reminder) = reminders.get_mut(*cursor_position) else {
+                        return;
+                    };
+                    reminder.toggle_pause();
+                    *last_event = PastEvent::ReminderPause(reminder.clone());
+                }
+            }
             InputAction::None => (),
         };
     }
@@ -177,6 +191,9 @@ pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<M
             &mut last_event,
         );
         if let Ok(mut reminders) = reminders.try_lock() {
+            for reminder in reminders.iter_mut() {
+                reminder.push_back_end_time_if_paused(time::Duration::seconds(1));
+            }
             let now = OffsetDateTime::now_utc().to_offset(OFFSET);
             if reminders
                 .iter()
