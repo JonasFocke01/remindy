@@ -2,7 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use crate::api::ApiStatus;
 
-pub fn build_status_box(api_status: &Arc<Mutex<ApiStatus>>) -> String {
+use super::past_event::PastEvent;
+
+pub fn build_status_box(api_status: &Arc<Mutex<ApiStatus>>, last_event: &PastEvent) -> String {
     let mut result = String::new();
     result.push_str("           =======================================\n\r");
     result.push_str(format!("           | {:<36}|\n\r", "'j', 'k' -> up, down").as_str());
@@ -42,6 +44,7 @@ pub fn build_status_box(api_status: &Arc<Mutex<ApiStatus>>) -> String {
         )
         .as_str(),
     );
-    result.push_str("           =======================================\n\n\r");
+    result.push_str("           =======================================\n\r");
+    result.push_str(format!("            {:^54}\n\n\r", last_event.to_string()).as_str());
     result
 }

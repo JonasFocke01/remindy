@@ -11,13 +11,13 @@ use time::{format_description, Duration, OffsetDateTime, Time, UtcOffset};
 
 use crate::reminder::{Reminder, ReminderType};
 
-use super::InputAction;
+use super::{past_event::PastEvent, InputAction};
 
 /// This Reads any input detected on the terminal window.
 /// This will block when a known key combination is found and there are follow up decisions to make
 /// for the user.
 /// Otherwise, this blocks for one second and returns.
-pub fn read_input(stdout: &mut Stdout) -> InputAction {
+pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputAction {
     if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
         let Ok(offset) = UtcOffset::from_hms(2, 0, 0) else {
             return InputAction::None;
@@ -33,6 +33,7 @@ pub fn read_input(stdout: &mut Stdout) -> InputAction {
                     if event.modifiers.contains(KeyModifiers::CONTROL) {
                         InputAction::ExitProgram
                     } else {
+                        *last_event = PastEvent::WrongInput;
                         InputAction::None
                     }
                 }
@@ -59,6 +60,7 @@ pub fn read_input(stdout: &mut Stdout) -> InputAction {
                     #[allow(clippy::useless_conversion, clippy::arithmetic_side_effects)]
                     if time_input.chars().all(|e| e.is_ascii_digit() || e == ':') {
                         let Ok(new_finish_time) = Time::parse(time_input.as_str(), &format) else {
+                            *last_event = PastEvent::WrongInput;
                             return InputAction::None;
                         };
                         finish_time = finish_time.replace_time(new_finish_time);
@@ -67,10 +69,12 @@ pub fn read_input(stdout: &mut Stdout) -> InputAction {
                     } else {
                         let Ok(parsed_duration_string) = DurationString::from_string(time_input)
                         else {
+                            *last_event = PastEvent::WrongInput;
                             return InputAction::None;
                         };
                         let parsed_duration: core::time::Duration = parsed_duration_string.into();
                         let Ok(parsed_duration) = parsed_duration.try_into() else {
+                            *last_event = PastEvent::WrongInput;
                             return InputAction::None;
                         };
                         duration = Duration::from(parsed_duration);

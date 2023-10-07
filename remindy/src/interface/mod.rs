@@ -4,6 +4,8 @@ pub mod key_reader;
 use key_reader::read_input;
 pub mod reminders;
 use reminders::build_reminder_list;
+pub mod past_event;
+use past_event::PastEvent;
 use std::{
     io::{Stdout, Write},
     sync::{Arc, Mutex},
@@ -39,6 +41,7 @@ impl InputAction {
         stdout: &mut Stdout,
         reminders: &Arc<Mutex<Vec<Reminder>>>,
         cursor_position: &mut usize,
+        last_event: &mut PastEvent,
     ) {
         match self {
             InputAction::ExitProgram => {
@@ -55,6 +58,7 @@ impl InputAction {
             InputAction::NewReminder(reminder) => {
                 if let Ok(mut reminders) = reminders.lock() {
                     reminders.push(reminder.clone());
+                    *last_event = PastEvent::ReminderCreated(reminder.clone());
                 }
             }
             InputAction::AttemptReminderRestart => {
@@ -63,6 +67,7 @@ impl InputAction {
                         return;
                     };
                     if reminder.restart_flag() {
+                        *last_event = PastEvent::ReminderEdited(reminder.clone());
                         reminder.restart();
                     } else {
                         reminder.set_restart_flag(true);
@@ -76,6 +81,7 @@ impl InputAction {
                     };
                     reminder.set_name(name.clone());
                     reminder.set_finish_notifications_send(false);
+                    *last_event = PastEvent::ReminderEdited(reminder.clone());
                 }
             }
             InputAction::CursorUp => *cursor_position = cursor_position.saturating_sub(1),
@@ -100,6 +106,7 @@ impl InputAction {
                         return;
                     };
                     reminder.snooze();
+                    *last_event = PastEvent::ReminderSnooze(reminder.clone());
                 }
             }
             InputAction::AttemptReminderDelete => {
@@ -108,6 +115,7 @@ impl InputAction {
                         return;
                     };
                     if reminder.delete_flag() {
+                        *last_event = PastEvent::ReminderDeleted(reminder.clone());
                         reminders.remove(*cursor_position);
                         if reminders.len() == *cursor_position {
                             *cursor_position = cursor_position.saturating_sub(1);
@@ -126,6 +134,7 @@ impl InputAction {
                     reminder.set_duration(retime_object.duration);
                     reminder.set_reminder_type(retime_object.reminder_type.clone());
                     reminder.set_finish_notifications_send(false);
+                    *last_event = PastEvent::ReminderEdited(reminder.clone());
                 }
             }
             InputAction::None => (),
@@ -137,6 +146,7 @@ impl InputAction {
 pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<Mutex<ApiStatus>>) {
     let mut cursor_position: usize = 0;
     let mut stdout = std::io::stdout();
+    let mut last_event = PastEvent::None;
     loop {
         let _trash_bin = enable_raw_mode().is_ok();
         execute!(
@@ -147,19 +157,24 @@ pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<M
         )
         .unwrap();
         if stdout
-            .write_all(build_status_box(api_status).as_bytes())
+            .write_all(build_status_box(api_status, &last_event).as_bytes())
             .is_err()
         {
             return;
         }
 
         if stdout
-            .write_all(build_reminder_list(reminders, cursor_position).as_bytes())
+            .write_all(build_reminder_list(reminders, cursor_position, &mut last_event).as_bytes())
             .is_err()
         {
             return;
         }
-        read_input(&mut stdout).perform(&mut stdout, reminders, &mut cursor_position);
+        read_input(&mut stdout, &mut last_event).perform(
+            &mut stdout,
+            reminders,
+            &mut cursor_position,
+            &mut last_event,
+        );
         if let Ok(mut reminders) = reminders.try_lock() {
             let now = OffsetDateTime::now_utc();
             if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {

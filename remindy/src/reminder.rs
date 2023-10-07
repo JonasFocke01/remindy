@@ -51,6 +51,9 @@ impl Reminder {
             restart_flag: false,
         })
     }
+    pub fn name(&self) -> &str {
+        self.name.as_str()
+    }
     pub fn set_name(&mut self, name: String) {
         self.name = name;
     }
@@ -82,7 +85,7 @@ impl Reminder {
         self.restart_flag = flag;
     }
     #[cfg(not(target_os = "macos"))]
-    pub fn play_alert_if_needed(&mut self) {
+    pub fn play_alert_if_needed(&mut self) -> bool {
         // TODO: Make UTC OFFSET a constant
 
         let now = OffsetDateTime::now_utc();
@@ -103,14 +106,14 @@ impl Reminder {
             // sound
             if let Ok((_stream, audio_stream_handle)) = OutputStream::try_default() {
                 let Ok(file) = File::open("song.mp3") else {
-                    return;
+                    return false;
                 };
                 let audio_buf = BufReader::new(file);
                 let Ok(sink) = Sink::try_new(&audio_stream_handle) else {
-                    return;
+                    return false;
                 };
                 let Ok(audio_source) = Decoder::new(audio_buf) else {
-                    return;
+                    return false;
                 };
                 sink.append(audio_source);
                 sink.set_volume(0.7);
@@ -118,8 +121,11 @@ impl Reminder {
                 let _trash_bin = msgbox::create(self.name.as_str(), "", msgbox::IconType::Info);
 
                 let _trash_bin = read();
+
+                return true;
             }
         }
+        false
     }
 
     #[cfg(target_os = "macos")]
