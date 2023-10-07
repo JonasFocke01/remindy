@@ -13,7 +13,7 @@ use time::{format_description, Duration, OffsetDateTime, UtcOffset};
 use crate::map_range;
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ReminderType {
     Duration,
     Time,
@@ -56,6 +56,33 @@ impl Reminder {
             restart_flag: false,
         }
     }
+    #[allow(clippy::arithmetic_side_effects)]
+    pub fn from_library(library_reminder: &Self) -> Self {
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        if library_reminder.reminder_type == ReminderType::Duration {
+            Self {
+                name: library_reminder.name().to_string(),
+                start_time: now,
+                reminder_type: library_reminder.reminder_type.clone(),
+                duration: library_reminder.duration,
+                finish_time: now + library_reminder.duration,
+                finish_notifications_send: false,
+                delete_flag: false,
+                restart_flag: false,
+            }
+        } else {
+            Self {
+                name: library_reminder.name().to_string(),
+                start_time: now,
+                reminder_type: library_reminder.reminder_type.clone(),
+                duration: library_reminder.finish_time - now,
+                finish_time: library_reminder.finish_time.replace_date(now.date()),
+                finish_notifications_send: false,
+                delete_flag: false,
+                restart_flag: false,
+            }
+        }
+    }
     pub fn name(&self) -> &str {
         self.name.as_str()
     }
@@ -91,7 +118,6 @@ impl Reminder {
     }
     #[cfg(not(target_os = "macos"))]
     pub fn play_alert_if_needed(&mut self) -> bool {
-
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         #[allow(clippy::arithmetic_side_effects)]
         let time_left = self.finish_time - now;

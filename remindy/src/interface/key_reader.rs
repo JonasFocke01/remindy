@@ -17,6 +17,7 @@ use super::{past_event::PastEvent, InputAction};
 /// This will block when a known key combination is found and there are follow up decisions to make
 /// for the user.
 /// Otherwise, this blocks for one second and returns.
+#[allow(clippy::too_many_lines)]
 pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputAction {
     if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
         // TODO: This format should be a const
@@ -78,7 +79,6 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                         finish_time = now + parsed_duration;
                         reminder_type = ReminderType::Duration;
                     }
-
                     InputAction::NewReminder(Reminder::new(
                         name,
                         reminder_type,
@@ -91,6 +91,30 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                 KeyCode::Char('j') => InputAction::CursorDown,
                 KeyCode::Char('d') => InputAction::AttemptReminderDelete,
                 KeyCode::Char('s') => InputAction::SnoozeReminder,
+                KeyCode::Char('l') => {
+                    execute!(stdout, cursor::Show,).unwrap();
+                    let _trash_bin = disable_raw_mode().is_ok();
+                    let Some(library_reminders) = Reminder::from_file("reminders-library.json")
+                    else {
+                        return InputAction::None;
+                    };
+                    for (i, reminder) in library_reminders.iter().enumerate() {
+                        println!("\r({i:0>2}) {:<10}", reminder.name(),);
+                    }
+                    print!("\rWhat reminder you want to add: ");
+                    let mut index_input = String::new();
+                    if stdin().read_line(&mut index_input).is_err() {
+                        return InputAction::None;
+                    };
+                    if let Ok(to_add_index) = index_input.replace('\n', "").parse::<usize>() {
+                        let Some(to_add_reminder) = library_reminders.get(to_add_index) else {
+                            return InputAction::None;
+                        };
+                        *last_event = PastEvent::ReminderCreated(to_add_reminder.clone());
+                        return InputAction::NewReminder(Reminder::from_library(to_add_reminder));
+                    }
+                    InputAction::None
+                }
                 KeyCode::Esc => InputAction::ResetReminderFlags,
                 // TODO: pause reminder
                 _ => InputAction::None,
