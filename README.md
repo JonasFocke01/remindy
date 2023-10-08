@@ -10,8 +10,11 @@ That script requires you to have 'cargo-deb' and 'dpkg' on your system.
 
 ## Repository structure
 
-The repo holds a 'remindy' folder with the main app.
+The repo holds a `remindy` folder with the main app.
 This is, because there will be more clients in the future.
+
+There is also a `.remindy` folder, that holds my example configuration.
+The installscript will copy the folder to your home dir.
 
 ## More features
 
