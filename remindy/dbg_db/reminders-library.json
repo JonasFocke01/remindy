@@ -1,60 +1,27 @@
 [
   {
-    "name": "Handy",
+    "name": "Calm Down",
     "start_time": [
       2023,
-      280,
-      20,
-      6,
-      16,
-      870847951,
-      2,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "duration": [
-      5400,
-      0
-    ],
-    "finish_time": [
-      2023,
-      280,
-      21,
-      36,
-      16,
-      870800982,
-      2,
-      0,
-      0
-    ],
-    "finish_notifications_send": false,
-    "delete_flag": false,
-    "restart_flag": false
-  },
-  {
-    "name": "Calm down",
-    "start_time": [
-      2023,
-      280,
-      20,
-      2,
-      34,
-      6816400,
+      281,
+      12,
+      41,
+      51,
+      385621029,
       2,
       0,
       0
     ],
     "reminder_type": "Time",
     "duration": [
-      5545,
-      993233190
+      32168,
+      614384321
     ],
     "finish_time": [
       2023,
-      280,
+      281,
       21,
-      35,
+      38,
       0,
       0,
       2,
@@ -63,50 +30,154 @@
     ],
     "finish_notifications_send": false,
     "delete_flag": false,
-    "restart_flag": false
+    "restart_flag": false,
+    "paused": false
   },
   {
-    "name": "Stehen",
+    "name": "Handy",
     "start_time": [
       2023,
-      280,
-      20,
-      2,
-      42,
-      910742621,
+      281,
+      12,
+      40,
+      36,
+      163269246,
       2,
       0,
       0
     ],
     "reminder_type": "Duration",
     "duration": [
-      4800,
+      5700,
       0
     ],
     "finish_time": [
       2023,
-      280,
-      21,
-      22,
-      42,
-      910694211,
+      281,
+      14,
+      15,
+      36,
+      163259736,
       2,
       0,
       0
     ],
     "finish_notifications_send": false,
     "delete_flag": false,
-    "restart_flag": false
+    "restart_flag": false,
+    "paused": false
   },
   {
     "name": "Sitzen",
     "start_time": [
       2023,
-      280,
-      20,
+      281,
+      12,
+      40,
+      58,
+      582056023,
       2,
-      50,
-      564600466,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      5100,
+      0
+    ],
+    "finish_time": [
+      2023,
+      281,
+      14,
+      5,
+      58,
+      582047313,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false
+  },
+  {
+    "name": "Nüsse",
+    "start_time": [
+      2023,
+      281,
+      12,
+      41,
+      22,
+      328940895,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Time",
+    "duration": [
+      4717,
+      671063565
+    ],
+    "finish_time": [
+      2023,
+      281,
+      14,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false
+  },
+  {
+    "name": "Eingießen",
+    "start_time": [
+      2023,
+      281,
+      12,
+      42,
+      43,
+      924362231,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      2160,
+      0
+    ],
+    "finish_time": [
+      2023,
+      281,
+      13,
+      18,
+      43,
+      924358011,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false
+  },
+  {
+    "name": "Stehen",
+    "start_time": [
+      2023,
+      281,
+      12,
+      40,
+      47,
+      379460154,
       2,
       0,
       0
@@ -118,139 +189,75 @@
     ],
     "finish_time": [
       2023,
-      280,
-      20,
-      37,
-      50,
-      564569226,
+      281,
+      13,
+      15,
+      47,
+      379455244,
       2,
       0,
       0
     ],
     "finish_notifications_send": false,
     "delete_flag": false,
-    "restart_flag": false
-  },
-  {
-    "name": "Eingießen",
-    "start_time": [
-      2023,
-      280,
-      20,
-      3,
-      35,
-      448454702,
-      2,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "duration": [
-      1800,
-      0
-    ],
-    "finish_time": [
-      2023,
-      280,
-      20,
-      33,
-      35,
-      448414762,
-      2,
-      0,
-      0
-    ],
-    "finish_notifications_send": false,
-    "delete_flag": false,
-    "restart_flag": false
+    "restart_flag": false,
+    "paused": false
   },
   {
     "name": "Trinken",
     "start_time": [
       2023,
-      280,
-      20,
-      4,
-      5,
-      769290835,
+      281,
+      12,
+      42,
+      59,
+      544381338,
       2,
       0,
       0
     ],
     "reminder_type": "Duration",
     "duration": [
-      360,
+      394,
       0
     ],
     "finish_time": [
       2023,
-      280,
-      20,
-      10,
-      5,
-      769261076,
+      281,
+      12,
+      49,
+      33,
+      544372738,
       2,
       0,
       0
     ],
     "finish_notifications_send": false,
     "delete_flag": false,
-    "restart_flag": false
-  },
-  {
-    "name": "Nüsse",
-    "start_time": [
-      2023,
-      280,
-      20,
-      3,
-      15,
-      884588429,
-      2,
-      0,
-      0
-    ],
-    "reminder_type": "Time",
-    "duration": [
-      -21795,
-      -884546970
-    ],
-    "finish_time": [
-      2023,
-      280,
-      14,
-      0,
-      0,
-      0,
-      2,
-      0,
-      0
-    ],
-    "finish_notifications_send": true,
-    "delete_flag": false,
-    "restart_flag": false
+    "restart_flag": false,
+    "paused": false
   },
   {
     "name": "Mittag",
     "start_time": [
       2023,
-      280,
-      20,
-      3,
-      1,
-      687626122,
+      281,
+      12,
+      41,
+      5,
+      111766313,
       2,
       0,
       0
     ],
     "reminder_type": "Time",
     "duration": [
-      -28981,
-      -687588372
+      -2465,
+      -111762033
     ],
     "finish_time": [
       2023,
-      280,
+      281,
       12,
       0,
       0,
@@ -261,6 +268,9 @@
     ],
     "finish_notifications_send": true,
     "delete_flag": false,
-    "restart_flag": false
+    "restart_flag": false,
+    "paused": false
   }
 ]
+
+

@@ -5,6 +5,40 @@
       2023,
       281,
       12,
+      39,
+      57,
+      699418741,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      3600,
+      0
+    ],
+    "finish_time": [
+      2023,
+      281,
+      13,
+      39,
+      57,
+      699418741,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false
+  },
+  {
+    "name": "Im fake!",
+    "start_time": [
+      2023,
+      281,
+      12,
       11,
       14,
       386910725,
