@@ -1,0 +1,266 @@
+[
+  {
+    "name": "Handy",
+    "start_time": [
+      2023,
+      280,
+      20,
+      6,
+      16,
+      870847951,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      5400,
+      0
+    ],
+    "finish_time": [
+      2023,
+      280,
+      21,
+      36,
+      16,
+      870800982,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Calm down",
+    "start_time": [
+      2023,
+      280,
+      20,
+      2,
+      34,
+      6816400,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Time",
+    "duration": [
+      5545,
+      993233190
+    ],
+    "finish_time": [
+      2023,
+      280,
+      21,
+      35,
+      0,
+      0,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Stehen",
+    "start_time": [
+      2023,
+      280,
+      20,
+      2,
+      42,
+      910742621,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      4800,
+      0
+    ],
+    "finish_time": [
+      2023,
+      280,
+      21,
+      22,
+      42,
+      910694211,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Sitzen",
+    "start_time": [
+      2023,
+      280,
+      20,
+      2,
+      50,
+      564600466,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      2100,
+      0
+    ],
+    "finish_time": [
+      2023,
+      280,
+      20,
+      37,
+      50,
+      564569226,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Eingießen",
+    "start_time": [
+      2023,
+      280,
+      20,
+      3,
+      35,
+      448454702,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      1800,
+      0
+    ],
+    "finish_time": [
+      2023,
+      280,
+      20,
+      33,
+      35,
+      448414762,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Trinken",
+    "start_time": [
+      2023,
+      280,
+      20,
+      4,
+      5,
+      769290835,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "duration": [
+      360,
+      0
+    ],
+    "finish_time": [
+      2023,
+      280,
+      20,
+      10,
+      5,
+      769261076,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": false,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Nüsse",
+    "start_time": [
+      2023,
+      280,
+      20,
+      3,
+      15,
+      884588429,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Time",
+    "duration": [
+      -21795,
+      -884546970
+    ],
+    "finish_time": [
+      2023,
+      280,
+      14,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": true,
+    "delete_flag": false,
+    "restart_flag": false
+  },
+  {
+    "name": "Mittag",
+    "start_time": [
+      2023,
+      280,
+      20,
+      3,
+      1,
+      687626122,
+      2,
+      0,
+      0
+    ],
+    "reminder_type": "Time",
+    "duration": [
+      -28981,
+      -687588372
+    ],
+    "finish_time": [
+      2023,
+      280,
+      12,
+      0,
+      0,
+      0,
+      2,
+      0,
+      0
+    ],
+    "finish_notifications_send": true,
+    "delete_flag": false,
+    "restart_flag": false
+  }
+]

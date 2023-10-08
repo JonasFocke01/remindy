@@ -21,6 +21,7 @@ use time::OffsetDateTime;
 use crate::{
     api::ApiStatus,
     reminder::{Reminder, OFFSET},
+    root_path, REMINDER_DB_FILE,
 };
 
 use self::key_reader::TimeObject;
@@ -216,7 +217,10 @@ pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<M
                     Ordering::Less
                 }
             });
-            Reminder::to_file("reminders.json", &reminders);
+            Reminder::to_file(
+                format!("{}/{REMINDER_DB_FILE}", root_path()).as_str(),
+                &reminders,
+            );
         }
     }
 }

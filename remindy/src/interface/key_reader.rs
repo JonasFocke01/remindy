@@ -1,4 +1,9 @@
-use std::io::{stdin, Stdout, Write};
+use std::{
+    fs::File,
+    io::{stdin, Stdout, Write},
+};
+
+use crate::{REMINDER_LIBRARY_FILE, root_path};
 
 use crossterm::{
     cursor,
@@ -94,10 +99,19 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                 KeyCode::Char('l') => {
                     execute!(stdout, cursor::Show,).unwrap();
                     let _trash_bin = disable_raw_mode().is_ok();
-                    let Some(library_reminders) = Reminder::from_file("reminders-library.json")
-                    else {
+                    let Some(library_reminders) = Reminder::from_file(
+                        format!("{}/{REMINDER_LIBRARY_FILE}", root_path()).as_str(),
+                    ) else {
+                        if let Ok(mut file) = File::create(
+                            format!("{}/{REMINDER_LIBRARY_FILE}", root_path()).as_str(),
+                        ) {
+                            let _trash_bin = file.write_all(b"[]");
+                        }
                         return InputAction::None;
                     };
+                    if library_reminders.is_empty() {
+                        return InputAction::None;
+                    }
                     for (i, reminder) in library_reminders.iter().enumerate() {
                         println!("\r({i:0>2}) {:<10}", reminder.name(),);
                     }

@@ -2,6 +2,8 @@ use std::{fmt::Display, fs::write};
 
 use std::{fs::File, io::BufReader};
 
+use crate::{AUDIO_FILE, root_path};
+
 use crossterm::event::read;
 use notify_rust::Notification;
 use rodio::{Decoder, OutputStream, Sink};
@@ -146,7 +148,7 @@ impl Reminder {
 
             // sound
             if let Ok((_stream, audio_stream_handle)) = OutputStream::try_default() {
-                let Ok(file) = File::open("song.mp3") else {
+                let Ok(file) = File::open(format!("{}/{AUDIO_FILE}", root_path())) else {
                     return false;
                 };
                 let audio_buf = BufReader::new(file);
