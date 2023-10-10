@@ -172,7 +172,7 @@ impl Reminder {
     }
 
     #[cfg(target_os = "macos")]
-    fn play_alert_if_needed(&mut self) {
+    pub fn play_alert_if_needed(&mut self) -> bool {
         let now = OffsetDateTime::now_utc().to_offset(UtcOffset::from_hms(2, 0, 0).unwrap());
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
@@ -182,7 +182,9 @@ impl Reminder {
                 .show()
                 .unwrap();
             self.finish_notifications_send = true;
+	    return true;
         }
+	false
     }
     pub fn restart(&mut self) {
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
