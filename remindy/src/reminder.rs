@@ -21,7 +21,8 @@ pub enum ReminderType {
     Time,
 }
 
-pub const OFFSET: UtcOffset = if let Ok(offset) = UtcOffset::from_hms(2, 0, 0) {
+// TODO: Account for summer/ winter time
+pub const OFFSET: UtcOffset = if let Ok(offset) = UtcOffset::from_hms(1, 0, 0) {
     offset
 } else {
     panic!("Cant compute UtcOffset")
