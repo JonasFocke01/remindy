@@ -197,7 +197,7 @@ impl Reminder {
         match self.reminder_type {
             ReminderType::Time => {
                 self.finish_time = self.finish_time.replace_date(now.date());
-                if self.finish_time < now {
+                while self.finish_time < now {
                     self.finish_time += Duration::days(1);
                 }
                 self.duration = self.finish_time - now;
