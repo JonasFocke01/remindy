@@ -75,7 +75,7 @@ impl InputAction {
                     };
                     if reminder.restart_flag() {
                         *last_event = PastEvent::ReminderEdited(reminder.clone());
-                        reminder.restart();
+                        reminder.restart(last_event);
                     } else {
                         reminder.set_restart_flag(true);
                     }

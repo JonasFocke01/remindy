@@ -3,7 +3,7 @@ use std::{
     io::{stdin, Stdout, Write},
 };
 
-use crate::{REMINDER_LIBRARY_FILE, root_path};
+use crate::{root_path, REMINDER_LIBRARY_FILE};
 
 use crossterm::{
     cursor,
@@ -12,7 +12,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use duration_string::DurationString;
-use time::{format_description, Duration, OffsetDateTime, Time};
+use time::{format_description, Date, Duration, Month, OffsetDateTime, Time};
 
 use crate::reminder::{Reminder, ReminderType, OFFSET};
 
@@ -43,13 +43,14 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                     execute!(stdout, cursor::Show,).unwrap();
                     let _trash_bin = disable_raw_mode().is_ok();
                     let mut name = String::new();
-                    // Something should print to ask for the input
+                    let _trash_bin = stdout.write_all(b"Name: ");
                     if stdin().read_line(&mut name).is_err() {
                         return InputAction::None;
                     };
                     name = name.replace('\n', "");
                     let mut time_input = String::new();
-                    // Something should print to ask for the input
+                    let _trash_bin =
+                        stdout.write_all(b"End time or date (1h10m | 15:23 | 8.11.2023): ");
                     if stdin().read_line(&mut time_input).is_err() {
                         return InputAction::None;
                     };
@@ -68,6 +69,42 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                         finish_time = finish_time.replace_time(new_finish_time);
                         reminder_type = ReminderType::Time;
                         duration = finish_time - now;
+                    } else if time_input.chars().all(|e| e.is_ascii_digit() || e == '.') {
+                        let mut broken_up_date = time_input.split('.');
+                        let Some(day) = broken_up_date.next() else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        let Ok(day): Result<u8, _> = day.parse() else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        let Some(month) = broken_up_date.next() else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        let Ok(month): Result<u8, _> = month.parse() else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        let Ok(month) = Month::try_from(month) else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        let Some(year) = broken_up_date.next() else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        let Ok(year): Result<i32, _> = year.parse() else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        let Ok(date) = Date::from_calendar_date(year, month, day) else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        finish_time = finish_time.replace_date(date);
+                        reminder_type = ReminderType::Date;
                     } else {
                         let Ok(parsed_duration_string) = DurationString::from_string(time_input)
                         else {
@@ -151,7 +188,8 @@ fn read_re_mode_input(stdout: &mut Stdout) -> InputAction {
                 InputAction::RenameReminder(name)
             }
             KeyCode::Char('t') => {
-                let _trash_bin = stdout.write_all(b"New end time (1h10m | 15:23): ");
+                let _trash_bin =
+                    stdout.write_all(b"New end time or date (1h10m | 15:23 | 8.11.2023): ");
                 execute!(stdout, cursor::Show,).unwrap();
                 let _trash_bin = disable_raw_mode().is_ok();
                 let mut time_input = String::new();
@@ -176,6 +214,38 @@ fn read_re_mode_input(stdout: &mut Stdout) -> InputAction {
                         finish_time,
                         duration: finish_time - now,
                     })
+                } else if time_input.chars().all(|e| e.is_ascii_digit() || e == '.') {
+                    let mut broken_up_date = time_input.split('.');
+                    let Some(day) = broken_up_date.next() else {
+                        return InputAction::None;
+                    };
+                    let Ok(day): Result<u8, _> = day.parse() else {
+                        return InputAction::None;
+                    };
+                    let Some(month) = broken_up_date.next() else {
+                        return InputAction::None;
+                    };
+                    let Ok(month): Result<u8, _> = month.parse() else {
+                        return InputAction::None;
+                    };
+                    let Ok(month) = Month::try_from(month) else {
+                        return InputAction::None;
+                    };
+                    let Some(year) = broken_up_date.next() else {
+                        return InputAction::None;
+                    };
+                    let Ok(year): Result<i32, _> = year.parse() else {
+                        return InputAction::None;
+                    };
+                    let Ok(date) = Date::from_calendar_date(year, month, day) else {
+                        return InputAction::None;
+                    };
+                    #[allow(clippy::arithmetic_side_effects)]
+                    return InputAction::RetimeReminder(TimeObject {
+                        reminder_type: ReminderType::Date,
+                        finish_time: finish_time.replace_date(date),
+                        duration: finish_time - now,
+                    });
                 } else {
                     let Ok(parsed_duration) = DurationString::from_string(time_input) else {
                         return InputAction::None;

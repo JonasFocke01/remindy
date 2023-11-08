@@ -2,7 +2,8 @@ use std::{fmt::Display, fs::write};
 
 use std::{fs::File, io::BufReader};
 
-use crate::{AUDIO_FILE, root_path};
+use crate::interface::past_event::PastEvent;
+use crate::{root_path, AUDIO_FILE};
 
 use crossterm::event::read;
 use notify_rust::Notification;
@@ -19,6 +20,8 @@ use crate::map_range;
 pub enum ReminderType {
     Duration,
     Time,
+    Date,
+    // TODO: Note
 }
 
 // TODO: Account for summer/ winter time
@@ -183,11 +186,11 @@ impl Reminder {
                 .show()
                 .unwrap();
             self.finish_notifications_send = true;
-	    return true;
+            return true;
         }
-	false
+        false
     }
-    pub fn restart(&mut self) {
+    pub fn restart(&mut self, last_event: &mut PastEvent) {
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         self.start_time = now;
         #[allow(clippy::arithmetic_side_effects)]
@@ -201,6 +204,9 @@ impl Reminder {
             }
             ReminderType::Duration => {
                 self.finish_time = now + self.duration;
+            }
+            ReminderType::Date => {
+                *last_event = PastEvent::TryResetDateReminder(self.clone());
             }
         }
         self.delete_flag = false;

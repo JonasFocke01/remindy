@@ -8,6 +8,7 @@ use crate::reminder::{Reminder, OFFSET};
 pub enum PastEvent {
     ReminderEnded(Reminder),
     WrongInput,
+    TryResetDateReminder(Reminder),
     ReminderCreated(Reminder),
     ReminderEdited(Reminder),
     ReminderDeleted(Reminder),
@@ -42,6 +43,12 @@ impl Display for PastEvent {
                 )
             }
             PastEvent::WrongInput => write!(f, "{}", "Wrong input detected".bright_red()),
+            PastEvent::TryResetDateReminder(reminder) => write!(
+                f,
+                "{} {}",
+                reminder.name().bright_green(),
+                "cannot be restarted (Date Reminder)".bright_red()
+            ),
             PastEvent::ReminderCreated(reminder) => write!(
                 f,
                 "{} {}",
