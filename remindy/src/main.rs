@@ -14,7 +14,7 @@ use interface::start_interface;
 pub const ROOT_PATH: &str = ".remindy";
 pub const REMINDER_DB_FILE: &str = "reminders.json";
 pub const REMINDER_LIBRARY_FILE: &str = "reminders-library.json";
-pub const AUDIO_FILE: &str = "song.mp3";
+pub const AUDIO_FILE: &str = "ring_tone.mp3";
 
 #[warn(
     clippy::pedantic,
