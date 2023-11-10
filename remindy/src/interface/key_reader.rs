@@ -166,6 +166,7 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                     }
                     InputAction::None
                 }
+                KeyCode::Char('e') => InputAction::AttemptReminderRepeatToggle,
                 KeyCode::Esc => InputAction::ResetReminderFlags,
                 _ => InputAction::None,
             };

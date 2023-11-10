@@ -14,6 +14,9 @@ pub fn build_reminder_list(
         for (i, reminder) in reminders.iter_mut().enumerate() {
             if reminder.play_alert_if_needed() {
                 *last_event = PastEvent::ReminderEnded(reminder.clone());
+                if reminder.repeating() {
+                    reminder.restart(last_event);
+                }
             }
             result.push_str(
                 format!(

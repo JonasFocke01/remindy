@@ -7,6 +7,7 @@ use crate::reminder::{Reminder, OFFSET};
 
 pub enum PastEvent {
     ReminderEnded(Reminder),
+    ReminderRepeatToggle(Reminder),
     WrongInput,
     TryResetDateReminder(Reminder),
     ReminderCreated(Reminder),
@@ -66,6 +67,9 @@ impl Display for PastEvent {
             }
             PastEvent::ReminderPause(reminder) => {
                 write!(f, "{} {}", reminder.name().blue(), "paused/unpaused".blue())
+            }
+            PastEvent::ReminderRepeatToggle(reminder) => {
+                write!(f, "{} {}", reminder.name().blue(), "repeat toggled".blue())
             }
             PastEvent::None => write!(f, "{}", " ".black()),
         }

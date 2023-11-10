@@ -43,6 +43,7 @@ pub struct Reminder {
     delete_flag: bool,
     restart_flag: bool,
     paused: bool,
+    repeating: bool,
 }
 
 impl Reminder {
@@ -63,6 +64,7 @@ impl Reminder {
             delete_flag: false,
             restart_flag: false,
             paused: false,
+            repeating: false,
         }
     }
     #[allow(clippy::arithmetic_side_effects)]
@@ -79,6 +81,7 @@ impl Reminder {
                 delete_flag: false,
                 restart_flag: false,
                 paused: false,
+                repeating: false,
             }
         } else {
             Self {
@@ -91,6 +94,7 @@ impl Reminder {
                 delete_flag: false,
                 restart_flag: false,
                 paused: false,
+                repeating: false,
             }
         }
     }
@@ -127,6 +131,12 @@ impl Reminder {
     pub fn set_restart_flag(&mut self, flag: bool) {
         self.restart_flag = flag;
     }
+    pub fn repeating(&self) -> bool {
+        self.repeating
+    }
+    pub fn toggle_repeat(&mut self) {
+        self.repeating = !self.repeating;
+    }
     #[allow(clippy::arithmetic_side_effects)]
     pub fn push_back_end_time_if_paused(&mut self, push_back_amount: Duration) {
         if self.paused {
@@ -136,6 +146,7 @@ impl Reminder {
     pub fn toggle_pause(&mut self) {
         self.paused = !self.paused;
     }
+    // TODO: declutter this by moving responsibilities into separate funtions
     #[cfg(not(target_os = "macos"))]
     pub fn play_alert_if_needed(&mut self) -> bool {
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
@@ -275,13 +286,18 @@ impl Display for Reminder {
             progressbar.push('>');
             write!(
                 f,
-                "{:>10} {:0>2}{}{:0>2}{}{:0>2} {}{:<21}{} {}{}{} {} ",
+                "{:>10}{} {:0>2}{}{:0>2}{}{:0>2} {}{:<21}{} {}{}{} {} ",
                 if self.delete_flag {
                     self.name.clone().bright_red()
                 } else if self.restart_flag {
                     self.name.clone().bright_blue()
                 } else {
                     self.name.clone().bright_green()
+                },
+                if self.repeating() {
+                    "∞".blue()
+                } else {
+                    String::from(" ").blue()
                 },
                 (time_left.whole_hours() - time_left.whole_days() * 24)
                     .to_string()
@@ -318,13 +334,18 @@ impl Display for Reminder {
         } else {
             write!(
                 f,
-                "{:>10}          {}{:<21}{} {}{}{}  ",
+                "{:>10}{}          {}{:<21}{} {}{}{}  ",
                 if self.delete_flag {
                     self.name.clone().bright_red()
                 } else if self.restart_flag {
                     self.name.clone().bright_blue()
                 } else {
                     self.name.clone().green()
+                },
+                if self.repeating() {
+                    "∞".blue()
+                } else {
+                    String::from(" ").blue()
                 },
                 "[".bright_green(),
                 "========DONE=========".yellow(),
@@ -349,6 +370,7 @@ impl Default for Reminder {
             delete_flag: false,
             restart_flag: false,
             paused: false,
+            repeating: false,
         }
     }
 }
@@ -366,6 +388,7 @@ impl From<ApiReminder> for Reminder {
             restart_flag: false,
             reminder_type: ReminderType::Time,
             paused: false,
+            repeating: false,
         }
     }
 }

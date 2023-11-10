@@ -28,6 +28,7 @@ use self::key_reader::TimeObject;
 
 pub enum InputAction {
     ExitProgram,
+    AttemptReminderRepeatToggle,
     NewReminder(Reminder),
     AttemptReminderRestart,
     AttemptReminderDelete,
@@ -151,6 +152,15 @@ impl InputAction {
                     };
                     reminder.toggle_pause();
                     *last_event = PastEvent::ReminderPause(reminder.clone());
+                }
+            }
+            InputAction::AttemptReminderRepeatToggle => {
+                if let Ok(mut reminders) = reminders.lock() {
+                    let Some(reminder) = reminders.get_mut(*cursor_position) else {
+                        return;
+                    };
+                    reminder.toggle_repeat();
+                    *last_event = PastEvent::ReminderRepeatToggle(reminder.clone());
                 }
             }
             InputAction::None => (),
