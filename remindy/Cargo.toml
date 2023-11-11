@@ -1,6 +1,6 @@
 [package]
 name = "remindy"
-version = "1.4.0"
+version = "1.4.1"
 edition = "2021"
 authors = ["Jonas Focke <test-test@test.com>"]
 

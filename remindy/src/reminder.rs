@@ -289,13 +289,15 @@ impl Display for Reminder {
                 "{:>10}{} {:0>2}{}{:0>2}{}{:0>2} {}{:<21}{} {}{}{} {} ",
                 if self.delete_flag {
                     self.name.clone().bright_red()
-                } else if self.restart_flag {
-                    self.name.clone().bright_blue()
                 } else {
-                    self.name.clone().bright_green()
+                    self.name.clone().green()
                 },
                 if self.repeating() {
                     "∞".blue()
+                } else if self.delete_flag() {
+                    "✗".bright_red()
+                } else if self.restart_flag() {
+                    "↻".bright_blue()
                 } else {
                     String::from(" ").blue()
                 },
@@ -337,13 +339,15 @@ impl Display for Reminder {
                 "{:>10}{}          {}{:<21}{} {}{}{}  ",
                 if self.delete_flag {
                     self.name.clone().bright_red()
-                } else if self.restart_flag {
-                    self.name.clone().bright_blue()
                 } else {
                     self.name.clone().green()
                 },
                 if self.repeating() {
                     "∞".blue()
+                } else if self.delete_flag() {
+                    "✗".bright_red()
+                } else if self.restart_flag() {
+                    "↻".bright_blue()
                 } else {
                     String::from(" ").blue()
                 },
