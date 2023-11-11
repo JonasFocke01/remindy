@@ -25,9 +25,6 @@ use super::{past_event::PastEvent, InputAction};
 #[allow(clippy::too_many_lines)]
 pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputAction {
     if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
-        let Ok(format) = format_description::parse("[hour]:[minute]") else {
-            return InputAction::None;
-        };
         #[allow(clippy::single_match, clippy::wildcard_enum_match_arm)]
         if let Ok(Event::Key(event)) = read() {
             return match event.code {
@@ -62,6 +59,9 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                     let mut duration: Duration = Duration::new(0, 0);
                     #[allow(clippy::useless_conversion, clippy::arithmetic_side_effects)]
                     if time_input.chars().all(|e| e.is_ascii_digit() || e == ':') {
+                        let Ok(format) = format_description::parse("[hour]:[minute]") else {
+                            return InputAction::None;
+                        };
                         let Ok(new_finish_time) = Time::parse(time_input.as_str(), &format) else {
                             *last_event = PastEvent::WrongInput;
                             return InputAction::None;
@@ -70,40 +70,14 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                         reminder_type = ReminderType::Time;
                         duration = finish_time - now;
                     } else if time_input.chars().all(|e| e.is_ascii_digit() || e == '.') {
-                        let mut broken_up_date = time_input.split('.');
-                        let Some(day) = broken_up_date.next() else {
+                        let Ok(format) = format_description::parse("[day].[month].[year]") else {
+                            return InputAction::None;
+                        };
+                        let Ok(new_finish_date) = Date::parse(time_input.as_str(), &format) else {
                             *last_event = PastEvent::WrongInput;
                             return InputAction::None;
                         };
-                        let Ok(day): Result<u8, _> = day.parse() else {
-                            *last_event = PastEvent::WrongInput;
-                            return InputAction::None;
-                        };
-                        let Some(month) = broken_up_date.next() else {
-                            *last_event = PastEvent::WrongInput;
-                            return InputAction::None;
-                        };
-                        let Ok(month): Result<u8, _> = month.parse() else {
-                            *last_event = PastEvent::WrongInput;
-                            return InputAction::None;
-                        };
-                        let Ok(month) = Month::try_from(month) else {
-                            *last_event = PastEvent::WrongInput;
-                            return InputAction::None;
-                        };
-                        let Some(year) = broken_up_date.next() else {
-                            *last_event = PastEvent::WrongInput;
-                            return InputAction::None;
-                        };
-                        let Ok(year): Result<i32, _> = year.parse() else {
-                            *last_event = PastEvent::WrongInput;
-                            return InputAction::None;
-                        };
-                        let Ok(date) = Date::from_calendar_date(year, month, day) else {
-                            *last_event = PastEvent::WrongInput;
-                            return InputAction::None;
-                        };
-                        finish_time = finish_time.replace_date(date);
+                        finish_time = finish_time.replace_date(new_finish_date);
                         reminder_type = ReminderType::Date;
                     } else {
                         let Ok(parsed_duration_string) = DurationString::from_string(time_input)
