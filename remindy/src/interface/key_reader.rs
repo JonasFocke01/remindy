@@ -12,7 +12,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use duration_string::DurationString;
-use time::{format_description, Date, Duration, Month, OffsetDateTime, Time};
+use time::{format_description, Date, Duration, Month, OffsetDateTime, PrimitiveDateTime, Time};
 
 use crate::reminder::{Reminder, ReminderType, OFFSET};
 
@@ -47,7 +47,7 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                     name = name.replace('\n', "");
                     let mut time_input = String::new();
                     let _trash_bin =
-                        stdout.write_all(b"End time or date (1h10m | 15:23 | 8.11.2023): ");
+                        stdout.write_all(b"End time or date (1h10m | 15:23 | 8.11.2023 | 8.11.2023 15:23): ");
                     if stdin().read_line(&mut time_input).is_err() {
                         return InputAction::None;
                     };
@@ -78,6 +78,24 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                             return InputAction::None;
                         };
                         finish_time = finish_time.replace_date(new_finish_date);
+                        reminder_type = ReminderType::Date;
+                    } else if time_input
+                        .chars()
+                        .all(|e| e.is_ascii_digit() || e == '.' || e == ':' || e == ' ')
+                    {
+                        let Ok(format) =
+                            format_description::parse("[day].[month].[year] [hour]:[minute]")
+                        else {
+                            return InputAction::None;
+                        };
+                        let Ok(new_finish_date_time) =
+                            PrimitiveDateTime::parse(time_input.as_str(), &format)
+                        else {
+                            *last_event = PastEvent::WrongInput;
+                            return InputAction::None;
+                        };
+                        finish_time = finish_time.replace_date(new_finish_date_time.date());
+                        finish_time = finish_time.replace_time(new_finish_date_time.time());
                         reminder_type = ReminderType::Date;
                     } else {
                         let Ok(parsed_duration_string) = DurationString::from_string(time_input)
@@ -164,7 +182,7 @@ fn read_re_mode_input(stdout: &mut Stdout) -> InputAction {
             }
             KeyCode::Char('t') => {
                 let _trash_bin =
-                    stdout.write_all(b"New end time or date (1h10m | 15:23 | 8.11.2023): ");
+                    stdout.write_all(b"New end time or date (1h10m | 15:23 | 8.11.2023 | 8.11.2023 15:23): ");
                 execute!(stdout, cursor::Show,).unwrap();
                 let _trash_bin = disable_raw_mode().is_ok();
                 let mut time_input = String::new();
