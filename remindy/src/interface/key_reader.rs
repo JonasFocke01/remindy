@@ -49,8 +49,9 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                     name = name.replace('\n', "");
                     let mut time_input = String::new();
                     let _trash_bin = enable_raw_mode().is_ok();
-                    let _trash_bin =
-                        stdout.write_all(b"End time or date (1h10m | 15:23 | 8.11.2023 | 8.11.2023 15:23): ");
+                    let _trash_bin = stdout.write_all(
+                        b"End time or date (1h10m | 15:23 | 8.11.2023 | 8.11.2023 15:23): ",
+                    );
                     let _trash_bin = stdout.flush();
                     let _trash_bin = disable_raw_mode().is_ok();
                     if stdin().read_line(&mut time_input).is_err() {
@@ -186,8 +187,9 @@ fn read_re_mode_input(stdout: &mut Stdout) -> InputAction {
                 InputAction::RenameReminder(name)
             }
             KeyCode::Char('t') => {
-                let _trash_bin =
-                    stdout.write_all(b"New end time or date (1h10m | 15:23 | 8.11.2023 | 8.11.2023 15:23): ");
+                let _trash_bin = stdout.write_all(
+                    b"New end time or date (1h10m | 15:23 | 8.11.2023 | 8.11.2023 15:23): ",
+                );
                 execute!(stdout, cursor::Show,).unwrap();
                 let _trash_bin = disable_raw_mode().is_ok();
                 let mut time_input = String::new();
