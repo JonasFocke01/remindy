@@ -6,7 +6,6 @@ use crate::interface::past_event::PastEvent;
 use crate::{root_path, AUDIO_FILE};
 
 use crossterm::event::read;
-use notify_rust::Notification;
 use rodio::{Decoder, OutputStream, Sink};
 
 use colored::Colorize;
@@ -161,12 +160,6 @@ impl Reminder {
         let time_left = self.finish_time - now;
         if !time_left.is_positive() && !self.finish_notifications_send {
             self.finish_notifications_send = true;
-
-            let _trash_bin = Notification::new()
-                .summary(self.name.as_str())
-                .urgency(notify_rust::Urgency::Critical)
-                .sound_name("alarm-clock_elapsed")
-                .show();
 
             // sound
             if let Ok((_stream, audio_stream_handle)) = OutputStream::try_default() {
