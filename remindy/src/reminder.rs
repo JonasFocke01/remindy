@@ -134,8 +134,15 @@ impl Reminder {
     pub fn repeating(&self) -> bool {
         self.repeating
     }
-    pub fn toggle_repeat(&mut self) {
-        self.repeating = !self.repeating;
+    pub fn toggle_repeat(&mut self) -> Option<bool> {
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        #[allow(clippy::arithmetic_side_effects)]
+        let time_left = self.finish_time - now;
+        if time_left.is_positive() {
+            self.repeating = !self.repeating;
+            return Some(self.repeating);
+        }
+        None
     }
     #[allow(clippy::arithmetic_side_effects)]
     pub fn push_back_end_time_if_paused(&mut self, push_back_amount: Duration) {
@@ -287,11 +294,7 @@ impl Display for Reminder {
             write!(
                 f,
                 "{:>10}{} {:0>2}{}{:0>2}{}{:0>2} {}{:<21}{} {}{}{} {} ",
-                if self.delete_flag {
-                    self.name.clone().bright_red()
-                } else {
-                    self.name.clone().green()
-                },
+                self.name.clone().green(),
                 if self.repeating() {
                     "∞".blue()
                 } else if self.delete_flag() {
@@ -337,11 +340,7 @@ impl Display for Reminder {
             write!(
                 f,
                 "{:>10}{}          {}{:<21}{} {}{}{}  ",
-                if self.delete_flag {
-                    self.name.clone().bright_red()
-                } else {
-                    self.name.clone().green()
-                },
+                self.name.clone().green(),
                 if self.repeating() {
                     "∞".blue()
                 } else if self.delete_flag() {

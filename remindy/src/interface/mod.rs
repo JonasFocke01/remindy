@@ -159,8 +159,11 @@ impl InputAction {
                     let Some(reminder) = reminders.get_mut(*cursor_position) else {
                         return;
                     };
-                    reminder.toggle_repeat();
-                    *last_event = PastEvent::ReminderRepeatToggle(reminder.clone());
+                    if let Some(toggled) = reminder.toggle_repeat() {
+                        if toggled {
+                            *last_event = PastEvent::ReminderRepeatToggle(reminder.clone());
+                        }
+                    }
                 }
             }
             InputAction::None => (),
