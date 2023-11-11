@@ -38,16 +38,21 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                 }
                 KeyCode::Char('n') => {
                     execute!(stdout, cursor::Show,).unwrap();
-                    let _trash_bin = disable_raw_mode().is_ok();
                     let mut name = String::new();
+                    let _trash_bin = enable_raw_mode().is_ok();
                     let _trash_bin = stdout.write_all(b"Name: ");
+                    let _trash_bin = stdout.flush();
+                    let _trash_bin = disable_raw_mode().is_ok();
                     if stdin().read_line(&mut name).is_err() {
                         return InputAction::None;
                     };
                     name = name.replace('\n', "");
                     let mut time_input = String::new();
+                    let _trash_bin = enable_raw_mode().is_ok();
                     let _trash_bin =
                         stdout.write_all(b"End time or date (1h10m | 15:23 | 8.11.2023 | 8.11.2023 15:23): ");
+                    let _trash_bin = stdout.flush();
+                    let _trash_bin = disable_raw_mode().is_ok();
                     if stdin().read_line(&mut time_input).is_err() {
                         return InputAction::None;
                     };
