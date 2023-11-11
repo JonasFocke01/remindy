@@ -214,38 +214,28 @@ fn read_re_mode_input(stdout: &mut Stdout) -> InputAction {
                         finish_time,
                         duration: finish_time - now,
                     })
-                } else if time_input.chars().all(|e| e.is_ascii_digit() || e == '.') {
-                    let mut broken_up_date = time_input.split('.');
-                    let Some(day) = broken_up_date.next() else {
+                } else if time_input
+                    .chars()
+                    .all(|e| e.is_ascii_digit() || e == '.' || e == ':' || e == ' ')
+                {
+                    let Ok(format) =
+                        format_description::parse("[day].[month].[year] [hour]:[minute]")
+                    else {
                         return InputAction::None;
                     };
-                    let Ok(day): Result<u8, _> = day.parse() else {
+                    let Ok(new_finish_date_time) =
+                        PrimitiveDateTime::parse(time_input.as_str(), &format)
+                    else {
                         return InputAction::None;
                     };
-                    let Some(month) = broken_up_date.next() else {
-                        return InputAction::None;
-                    };
-                    let Ok(month): Result<u8, _> = month.parse() else {
-                        return InputAction::None;
-                    };
-                    let Ok(month) = Month::try_from(month) else {
-                        return InputAction::None;
-                    };
-                    let Some(year) = broken_up_date.next() else {
-                        return InputAction::None;
-                    };
-                    let Ok(year): Result<i32, _> = year.parse() else {
-                        return InputAction::None;
-                    };
-                    let Ok(date) = Date::from_calendar_date(year, month, day) else {
-                        return InputAction::None;
-                    };
+                    finish_time = finish_time.replace_date(new_finish_date_time.date());
+                    finish_time = finish_time.replace_time(new_finish_date_time.time());
                     #[allow(clippy::arithmetic_side_effects)]
-                    return InputAction::RetimeReminder(TimeObject {
+                    InputAction::RetimeReminder(TimeObject {
                         reminder_type: ReminderType::Date,
-                        finish_time: finish_time.replace_date(date),
+                        finish_time,
                         duration: finish_time - now,
-                    });
+                    })
                 } else {
                     let Ok(parsed_duration) = DurationString::from_string(time_input) else {
                         return InputAction::None;
