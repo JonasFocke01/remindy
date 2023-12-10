@@ -1,4 +1,5 @@
 pub mod status;
+use duration_string::DurationString;
 use status::build_status_box;
 pub mod key_reader;
 use key_reader::read_input;
@@ -16,7 +17,7 @@ use crossterm::{
     cursor, execute,
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use time::OffsetDateTime;
+use time::{Duration, OffsetDateTime};
 
 use crate::{
     api::ApiStatus,
@@ -38,6 +39,7 @@ pub enum InputAction {
     ResetReminderFlags,
     SnoozeReminder,
     RetimeReminder(TimeObject),
+    PushBackReminder(DurationString),
     PauseReminder,
     None,
 }
@@ -164,6 +166,18 @@ impl InputAction {
                             *last_event = PastEvent::ReminderRepeatToggle(reminder.clone());
                         }
                     }
+                }
+            }
+            InputAction::PushBackReminder(amount_to_add) => {
+                if let Ok(mut reminders) = reminders.lock() {
+                    let Some(reminder) = reminders.get_mut(*cursor_position) else {
+                        return;
+                    };
+                    let d: core::time::Duration = (*amount_to_add).into();
+                    let Ok(duration): Result<time::Duration, _> = d.try_into() else {
+                        return;
+                    };
+                    reminder.set_finish_time(reminder.finish_time().saturating_add(duration));
                 }
             }
             InputAction::None => (),
