@@ -293,12 +293,12 @@ impl Display for Reminder {
                 f,
                 "{:>10}{} {} {}{:<21}{} {} ",
                 self.name.clone().green(),
-                if self.repeating() {
-                    "∞".blue()
+                if self.restart_flag() {
+                    "↻".bright_blue()
                 } else if self.delete_flag() {
                     "✗".bright_red()
-                } else if self.restart_flag() {
-                    "↻".bright_blue()
+                } else if self.repeating() {
+                    "∞".blue()
                 } else {
                     String::from(" ").blue()
                 },
