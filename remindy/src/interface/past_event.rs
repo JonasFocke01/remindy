@@ -9,6 +9,7 @@ pub enum PastEvent {
     ReminderEnded(Reminder),
     ReminderRepeatToggle(Reminder),
     WrongInput,
+    InternalError,
     TryResetDateReminder(Reminder),
     ReminderCreated(Reminder),
     ReminderEdited(Reminder),
@@ -44,6 +45,7 @@ impl Display for PastEvent {
                 )
             }
             PastEvent::WrongInput => write!(f, "{}", "Wrong input detected".bright_red()),
+            PastEvent::InternalError => write!(f, "{}", "A internal Error happened".bright_red()),
             PastEvent::TryResetDateReminder(reminder) => write!(
                 f,
                 "{} {}",

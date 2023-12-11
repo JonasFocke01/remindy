@@ -17,7 +17,7 @@ use crossterm::{
     cursor, execute,
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use time::{Duration, OffsetDateTime};
+use time::OffsetDateTime;
 
 use crate::{
     api::ApiStatus,
@@ -34,6 +34,7 @@ pub enum InputAction {
     AttemptReminderRestart,
     AttemptReminderDelete,
     RenameReminder(String),
+    AlterDescription(String),
     CursorUp,
     CursorDown,
     ResetReminderFlags,
@@ -180,6 +181,14 @@ impl InputAction {
                     reminder.set_finish_time(reminder.finish_time().saturating_add(duration));
                 }
             }
+            InputAction::AlterDescription(description) => {
+                if let Ok(mut reminders) = reminders.lock() {
+                    let Some(reminder) = reminders.get_mut(*cursor_position) else {
+                        return;
+                    };
+                    reminder.set_description(description.clone());
+                }
+            }
             InputAction::None => (),
         };
     }
@@ -212,7 +221,13 @@ pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<M
         {
             return;
         }
-        read_input(&mut stdout, &mut last_event).perform(
+        read_input(
+            &mut stdout,
+            reminders,
+            &mut cursor_position,
+            &mut last_event,
+        )
+        .perform(
             &mut stdout,
             reminders,
             &mut cursor_position,

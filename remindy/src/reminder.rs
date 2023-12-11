@@ -30,10 +30,11 @@ pub const OFFSET: UtcOffset = if let Ok(offset) = UtcOffset::from_hms(1, 0, 0) {
     panic!("Cant compute UtcOffset")
 };
 
-#[allow(clippy::struct_excessive_bools)]
+#[allow(clippy::struct_excessive_bools, clippy::struct_field_names)]
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Reminder {
     name: String,
+    description: String,
     start_time: OffsetDateTime,
     reminder_type: ReminderType,
     duration: Duration,
@@ -55,6 +56,7 @@ impl Reminder {
         let start_time = OffsetDateTime::now_utc().to_offset(OFFSET);
         Self {
             name,
+            description: String::new(),
             start_time,
             reminder_type,
             duration,
@@ -72,6 +74,7 @@ impl Reminder {
         if library_reminder.reminder_type == ReminderType::Duration {
             Self {
                 name: library_reminder.name().to_string(),
+                description: library_reminder.description().to_string(),
                 start_time: now,
                 reminder_type: library_reminder.reminder_type.clone(),
                 duration: library_reminder.duration,
@@ -85,6 +88,7 @@ impl Reminder {
         } else {
             Self {
                 name: library_reminder.name().to_string(),
+                description: library_reminder.description().to_string(),
                 start_time: now,
                 reminder_type: library_reminder.reminder_type.clone(),
                 duration: library_reminder.finish_time - now,
@@ -102,6 +106,12 @@ impl Reminder {
     }
     pub fn set_name(&mut self, name: String) {
         self.name = name;
+    }
+    pub fn description(&self) -> &str {
+        self.description.as_str()
+    }
+    pub fn set_description(&mut self, description: String) {
+        self.description = description;
     }
     pub fn set_reminder_type(&mut self, reminder_type: ReminderType) {
         self.reminder_type = reminder_type;
@@ -365,6 +375,7 @@ impl Default for Reminder {
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         Self {
             name: String::new(),
+            description: String::new(),
             start_time: now,
             reminder_type: ReminderType::Time,
             duration: Duration::new(0, 0),
@@ -382,6 +393,7 @@ impl From<ApiReminder> for Reminder {
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         Self {
             name: value.name,
+            description: value.description,
             start_time: now,
             #[allow(clippy::arithmetic_side_effects)]
             duration: now - value.finish_time,
@@ -400,5 +412,6 @@ impl From<ApiReminder> for Reminder {
 #[allow(clippy::module_name_repetitions)]
 pub struct ApiReminder {
     name: String,
+    description: String,
     finish_time: OffsetDateTime,
 }

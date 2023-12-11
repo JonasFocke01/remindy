@@ -1,6 +1,8 @@
 use std::{
     fs::File,
-    io::{stdin, Stdout, Write},
+    io::{stdin, Read, Stdout, Write},
+    process::{Command, Stdio},
+    sync::{Arc, Mutex},
 };
 
 use crate::{root_path, REMINDER_LIBRARY_FILE};
@@ -12,7 +14,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use duration_string::DurationString;
-use time::{format_description, Date, Duration, Month, OffsetDateTime, PrimitiveDateTime, Time};
+use time::{format_description, Date, Duration, OffsetDateTime, PrimitiveDateTime, Time};
 
 use crate::reminder::{Reminder, ReminderType, OFFSET};
 
@@ -23,7 +25,12 @@ use super::{past_event::PastEvent, InputAction};
 /// for the user.
 /// Otherwise, this blocks for one second and returns.
 #[allow(clippy::too_many_lines)]
-pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputAction {
+pub fn read_input(
+    stdout: &mut Stdout,
+    reminders: &Arc<Mutex<Vec<Reminder>>>,
+    cursor_position: &mut usize,
+    last_event: &mut PastEvent,
+) -> InputAction {
     if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
         #[allow(clippy::single_match, clippy::wildcard_enum_match_arm)]
         if let Ok(Event::Key(event)) = read() {
@@ -165,6 +172,38 @@ pub fn read_input(stdout: &mut Stdout, last_event: &mut PastEvent) -> InputActio
                     InputAction::None
                 }
                 KeyCode::Char('e') => InputAction::AttemptReminderRepeatToggle,
+                KeyCode::Enter => {
+                    let mut name = String::new();
+                    let mut description = String::new();
+                    if let Ok(reminders) = reminders.lock() {
+                        if let Some(reminder) = reminders.get(*cursor_position) {
+                            description = reminder.description().to_string();
+                            name = reminder.name().to_string();
+                        }
+                    }
+                    let Ok(process) = Command::new("vipe")
+                        .stdin(Stdio::piped())
+                        .stdout(Stdio::piped())
+                        .spawn()
+                    else {
+                        *last_event = PastEvent::InternalError;
+                        return InputAction::None;
+                    };
+                    #[allow(clippy::expect_used)]
+                    let _trash_bin = process
+                        .stdin
+                        .expect("Cant send description to editor")
+                        .write_all(description.as_bytes());
+                    #[allow(clippy::expect_used)]
+                    let _trash_bin = process
+                        .stdout
+                        .expect("Cant read pipe from editor")
+                        .read_to_string(&mut description);
+                    let mut reminder = Reminder::default();
+                    reminder.set_name(name);
+                    *last_event = PastEvent::ReminderEdited(reminder);
+                    InputAction::AlterDescription(description)
+                }
                 KeyCode::Char('+') => {
                     let _trash_bin = stdout.write_all(b"Add duration (1h10m15s): ");
                     execute!(stdout, cursor::Show,).unwrap();
