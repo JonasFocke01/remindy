@@ -286,7 +286,7 @@ impl Display for Reminder {
             progressbar.push('>');
             write!(
                 f,
-                "{:>10}{} {:0>2}{}{:0>2}{}{:0>2} {}{:<21}{} {}{}{} {} ",
+                "{:>10}{} {} {}{:<21}{} {}{}{} ",
                 self.name.clone().green(),
                 if self.repeating() {
                     "∞".blue()
@@ -297,17 +297,28 @@ impl Display for Reminder {
                 } else {
                     String::from(" ").blue()
                 },
-                (time_left.whole_hours() - time_left.whole_days() * 24)
-                    .to_string()
-                    .bright_red(),
-                ":".bright_red(),
-                (time_left.whole_minutes() - time_left.whole_hours() * 60)
-                    .to_string()
-                    .bright_red(),
-                ":".bright_red(),
-                (time_left.whole_seconds() - time_left.whole_minutes() * 60)
-                    .to_string()
-                    .bright_red(),
+                if time_left.whole_days() > 0 {
+                    format!(
+                        "{:>3}{}",
+                        time_left.whole_days().to_string().bright_red(),
+                        " days".bright_red(),
+                    )
+                } else {
+                    format!(
+                        "{:0>2}{}{:0>2}{}{:0>2}",
+                        (time_left.whole_hours() - time_left.whole_days() * 24)
+                            .to_string()
+                            .bright_red(),
+                        ":".bright_red(),
+                        (time_left.whole_minutes() - time_left.whole_hours() * 60)
+                            .to_string()
+                            .bright_red(),
+                        ":".bright_red(),
+                        (time_left.whole_seconds() - time_left.whole_minutes() * 60)
+                            .to_string()
+                            .bright_red(),
+                    )
+                },
                 "[".bright_green(),
                 if self.paused {
                     progressbar.blue()
@@ -318,16 +329,6 @@ impl Display for Reminder {
                 "(".bright_green(),
                 finish_time.bright_red(),
                 ")".bright_green(),
-                if time_left.whole_days() > 0 {
-                    format!(
-                        "{}{}{}",
-                        "+".bright_red(),
-                        time_left.whole_days().to_string().bright_red(),
-                        " days".bright_red(),
-                    )
-                } else {
-                    String::new()
-                },
             )
         } else {
             write!(
