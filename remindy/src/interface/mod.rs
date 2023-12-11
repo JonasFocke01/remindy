@@ -17,13 +17,8 @@ use crossterm::{
     cursor, execute,
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use time::OffsetDateTime;
 
-use crate::{
-    api::ApiStatus,
-    reminder::{Reminder, OFFSET},
-    root_path, REMINDER_DB_FILE,
-};
+use crate::{api::ApiStatus, reminder::Reminder, root_path, REMINDER_DB_FILE};
 
 use self::key_reader::TimeObject;
 
@@ -236,21 +231,6 @@ pub fn start_interface(reminders: &Arc<Mutex<Vec<Reminder>>>, api_status: &Arc<M
         if let Ok(mut reminders) = reminders.try_lock() {
             for reminder in reminders.iter_mut() {
                 reminder.push_back_end_time_if_paused(time::Duration::seconds(1));
-            }
-            let now = OffsetDateTime::now_utc().to_offset(OFFSET);
-            if reminders
-                .iter()
-                .filter(|reminder| reminder.finish_time() < now)
-                .collect::<Vec<&Reminder>>()
-                .len()
-                > 5
-                && reminders
-                    .last()
-                    .map_or(Reminder::default(), Reminder::clone)
-                    .finish_time()
-                    < now
-            {
-                let _trash_bin = reminders.pop();
             }
             reminders.sort_by(|a, b| {
                 if a.finish_time().cmp(&b.finish_time()) == Ordering::Less {
