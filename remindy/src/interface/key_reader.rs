@@ -194,15 +194,16 @@ pub fn read_input(
                         .stdin
                         .expect("Cant send description to editor")
                         .write_all(description.as_bytes());
+                    let mut new_description = String::new();
                     #[allow(clippy::expect_used)]
                     let _trash_bin = process
                         .stdout
                         .expect("Cant read pipe from editor")
-                        .read_to_string(&mut description);
+                        .read_to_string(&mut new_description);
                     let mut reminder = Reminder::default();
                     reminder.set_name(name);
                     *last_event = PastEvent::ReminderEdited(reminder);
-                    InputAction::AlterDescription(description)
+                    InputAction::AlterDescription(new_description)
                 }
                 KeyCode::Char('+') => {
                     let _trash_bin = stdout.write_all(b"Add duration (1h10m15s): ");

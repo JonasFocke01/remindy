@@ -301,7 +301,7 @@ impl Display for Reminder {
             progressbar.push('>');
             write!(
                 f,
-                "{:>10}{} {} {}{:<21}{} {} ",
+                "{:>10}{} {} {}{:<21}{} {}",
                 self.name.clone().green(),
                 if self.restart_flag() {
                     "↻".bright_blue()
@@ -345,7 +345,7 @@ impl Display for Reminder {
                     finish_date.bright_red()
                 } else {
                     format!(" {finish_time} ").bright_red()
-                }
+                },
             )
         } else {
             write!(

@@ -20,7 +20,7 @@ pub fn build_reminder_list(
             }
             result.push_str(
                 format!(
-                    "{}{}{}\n\r",
+                    "\r{}{}{}\n\r{}",
                     if i == cursor_position {
                         String::from("[")
                     } else {
@@ -32,6 +32,7 @@ pub fn build_reminder_list(
                     } else {
                         String::new()
                     },
+                    reminder.description().replace('\n', "\n\r")
                 )
                 .as_str(),
             );
