@@ -253,15 +253,20 @@ impl Reminder {
     }
 }
 impl Display for Reminder {
-    #[allow(clippy::arithmetic_side_effects)]
+    #[allow(clippy::arithmetic_side_effects, clippy::too_many_lines)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         let time_left = self.finish_time - now;
-        let Ok(format) = format_description::parse("[hour]:[minute]:[second] [day].[month].[year]")
-        else {
+        let Ok(time_format) = format_description::parse("[hour]:[minute]:[second]") else {
             return Err(std::fmt::Error);
         };
-        let Ok(finish_time) = self.finish_time.format(&format) else {
+        let Ok(finish_time) = self.finish_time.format(&time_format) else {
+            return Err(std::fmt::Error);
+        };
+        let Ok(date_format) = format_description::parse("[day].[month].[year]") else {
+            return Err(std::fmt::Error);
+        };
+        let Ok(finish_date) = self.finish_time.format(&date_format) else {
             return Err(std::fmt::Error);
         };
         if time_left.is_positive() {
@@ -286,7 +291,7 @@ impl Display for Reminder {
             progressbar.push('>');
             write!(
                 f,
-                "{:>10}{} {} {}{:<21}{} {}{}{} ",
+                "{:>10}{} {} {}{:<21}{} {} ",
                 self.name.clone().green(),
                 if self.repeating() {
                     "∞".blue()
@@ -326,14 +331,16 @@ impl Display for Reminder {
                     progressbar.bright_red()
                 },
                 "]".bright_green(),
-                "(".bright_green(),
-                finish_time.bright_red(),
-                ")".bright_green(),
+                if time_left.whole_days() > 0 {
+                    finish_date.bright_red()
+                } else {
+                    format!(" {finish_time} ").bright_red()
+                }
             )
         } else {
             write!(
                 f,
-                "{:>10}{}          {}{:<21}{} {}{}{}  ",
+                "{:>10}{}          {}{:<21}{} {} {}  ",
                 self.name.clone().green(),
                 if self.repeating() {
                     "∞".blue()
@@ -347,9 +354,8 @@ impl Display for Reminder {
                 "[".bright_green(),
                 "========DONE=========".yellow(),
                 "]".bright_green(),
-                "(".bright_green(),
+                finish_date.bright_red(),
                 finish_time.bright_red(),
-                ")".bright_green(),
             )
         }
     }
