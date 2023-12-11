@@ -1,5 +1,7 @@
 use std::sync::{Arc, Mutex};
 
+use colored::Colorize;
+
 use crate::reminder::Reminder;
 
 use super::past_event::PastEvent;
@@ -32,7 +34,7 @@ pub fn build_reminder_list(
                     } else {
                         String::new()
                     },
-                    reminder.description().replace('\n', "\n\r")
+                    reminder.description().replace('\n', "\n\r").cyan()
                 )
                 .as_str(),
             );
