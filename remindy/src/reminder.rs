@@ -172,6 +172,7 @@ impl Reminder {
             self.finish_notifications_send = true;
 
             // sound
+            #[cfg(not(debug_assertions))]
             if let Ok((_stream, audio_stream_handle)) = OutputStream::try_default() {
                 let Ok(file) = File::open(format!("{}/{AUDIO_FILE}", root_path())) else {
                     return false;
