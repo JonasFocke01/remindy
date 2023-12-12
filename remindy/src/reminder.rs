@@ -165,6 +165,8 @@ impl Reminder {
     // TODO: declutter this by moving responsibilities into separate funtions
     #[cfg(not(target_os = "macos"))]
     pub fn play_alert_if_needed(&mut self) -> bool {
+        use std::process::Command;
+
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         #[allow(clippy::arithmetic_side_effects)]
         let time_left = self.finish_time - now;
@@ -188,6 +190,9 @@ impl Reminder {
                 sink.set_volume(0.7);
 
                 let _trash_bin = msgbox::create(self.name.as_str(), "", msgbox::IconType::Info);
+
+                // This is works only with i3-wm
+                let _ = Command::new("i3-msg").arg("workspace").arg("musik").spawn();
 
                 let _trash_bin = read();
 
