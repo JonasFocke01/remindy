@@ -1,8 +1,9 @@
 use std::sync::{Arc, Mutex};
 
 use colored::Colorize;
+use time::{format_description, OffsetDateTime};
 
-use crate::reminder::Reminder;
+use crate::reminder::{Reminder, OFFSET};
 
 use super::past_event::PastEvent;
 
@@ -20,9 +21,15 @@ pub fn build_reminder_list(
                     reminder.restart(last_event);
                 }
             }
+            let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+            #[allow(clippy::arithmetic_side_effects)]
+            let time_left = reminder.finish_time() - now;
+            let Ok(time_format) = format_description::parse("[hour]:[minute]:[second]") else {
+                return String::new();
+            };
             result.push_str(
                 format!(
-                    "\r{}{}{}\n\r{}",
+                    "\r {}{}{}\n\r{}",
                     if i == cursor_position {
                         String::from("[")
                     } else {
@@ -34,7 +41,19 @@ pub fn build_reminder_list(
                     } else {
                         String::new()
                     },
-                    reminder.description().replace('\n', "\n\r").cyan()
+                    if time_left.whole_days() > 0 {
+                        let Ok(finish_time) = reminder.finish_time().format(&time_format) else {
+                            return String::from("kaak");
+                        };
+                        format!(
+                            "                        {}\n\r{}",
+                            finish_time,
+                            reminder.description().replace('\n', "\n\r").cyan()
+                        )
+                        .cyan()
+                    } else {
+                        format!("{}", reminder.description().replace('\n', "\n\r").cyan()).cyan()
+                    }
                 )
                 .as_str(),
             );
