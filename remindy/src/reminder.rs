@@ -56,7 +56,7 @@ impl Reminder {
         let start_time = OffsetDateTime::now_utc().to_offset(OFFSET);
         Self {
             name,
-            description: String::new(),
+            description: String::from("                         "),
             start_time,
             reminder_type,
             duration,
