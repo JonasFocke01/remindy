@@ -219,6 +219,20 @@ pub fn read_input(
                     };
                     InputAction::PushBackReminder(parsed_duration)
                 }
+                KeyCode::Char('-') => {
+                    let _trash_bin = stdout.write_all(b"Subtract duration (1h10m15s): ");
+                    execute!(stdout, cursor::Show,).unwrap();
+                    let _trash_bin = disable_raw_mode().is_ok();
+                    let mut time_input = String::new();
+                    let _trash_bin = stdin().read_line(&mut time_input);
+                    time_input = time_input.replace('\n', "");
+
+                    let _trash_bin = enable_raw_mode().is_ok();
+                    let Ok(parsed_duration) = DurationString::from_string(time_input) else {
+                        return InputAction::None;
+                    };
+                    InputAction::CutReminderDuration(parsed_duration)
+                }
                 KeyCode::Esc => InputAction::ResetReminderFlags,
                 _ => InputAction::None,
             };

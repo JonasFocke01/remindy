@@ -30,6 +30,7 @@ pub fn build_status_box(api_status: &Arc<Mutex<ApiStatus>>, last_event: &PastEve
     result.push_str(format!("           | {:<36}|\n\r", "'esc' -> unmark everything").as_str());
     result.push_str(format!("           | {:<36}|\n\r", "'e' -> repeat").as_str());
     result.push_str(format!("           | {:<36}|\n\r", "'+' -> add to endtime").as_str());
+    result.push_str(format!("           | {:<36}|\n\r", "'-' -> subtract from endtime").as_str());
     result.push_str(format!("           | {:<36}|\n\r", "'ENTER' -> Edit").as_str());
     result.push_str(format!("           | {:<36}|\n\r", "'CTRL' + 'c' -> exit(0)").as_str());
     if let Ok(api_status) = api_status.lock() {

@@ -36,6 +36,7 @@ pub enum InputAction {
     SnoozeReminder,
     RetimeReminder(TimeObject),
     PushBackReminder(DurationString),
+    CutReminderDuration(DurationString),
     PauseReminder,
     None,
 }
@@ -174,6 +175,18 @@ impl InputAction {
                         return;
                     };
                     reminder.set_finish_time(reminder.finish_time().saturating_add(duration));
+                }
+            }
+            InputAction::CutReminderDuration(amount_to_subtract) => {
+                if let Ok(mut reminders) = reminders.lock() {
+                    let Some(reminder) = reminders.get_mut(*cursor_position) else {
+                        return;
+                    };
+                    let d: core::time::Duration = (*amount_to_subtract).into();
+                    let Ok(duration): Result<time::Duration, _> = d.try_into() else {
+                        return;
+                    };
+                    reminder.set_finish_time(reminder.finish_time().saturating_sub(duration));
                 }
             }
             InputAction::AlterDescription(description) => {
