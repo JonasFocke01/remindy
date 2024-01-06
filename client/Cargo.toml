@@ -1,0 +1,19 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0.182", features = ["derive"] }
+serde_json = "1.0.104"
+time = { version = "0.3.28", features = ["serde", "local-offset", "parsing", "formatting"] }
+duration-string = "0.3.0"
+crossterm = "0.27.0"
+colored = "2.0.4"
+msgbox = "0.7.0"
+rodio = "0.17.1"
+home = "0.5.5"
+reminder = { path = "../reminder" }
+reqwest = { version = "0.11.23", features = ["blocking", "json"] }

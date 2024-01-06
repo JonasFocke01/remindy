@@ -1,0 +1,17 @@
+[package]
+name = "server"
+version = "0.0.1"
+edition = "2021"
+authors = ["Jonas Focke <test-test@test.com>"]
+description = "The server for remindy"
+license = "MIT"
+
+[dependencies]
+axum = { version = "0.7.3", features = ['multipart'] }
+tower-http = { version = "0.4.3", features = ['cors'] }
+tokio = { version = "1.29.1", features = ["full"] }
+serde = { version = "1.0.182", features = ["derive"] }
+serde_json = "1.0.104"
+time = { version = "0.3.28", features = ["serde", "local-offset", "parsing", "formatting"] }
+home = "0.5.5"
+reminder = { path = "../reminder" }

@@ -1,3 +1,4 @@
+-- TODO rework this based on the new rework
 ## Description
 
 Remindy is a little reminder app with vim inspired commands.

@@ -1,0 +1,268 @@
+[
+  {
+    "id": 1,
+    "name": "meem",
+    "description": "",
+    "start_time": [
+      2024,
+      6,
+      11,
+      44,
+      27,
+      323062447,
+      1,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "whole_duration": [
+      9,
+      998892515
+    ],
+    "finish_time": [
+      2024,
+      6,
+      11,
+      44,
+      37,
+      321954962,
+      1,
+      0,
+      0
+    ],
+    "needs_confirmation": false,
+    "already_confirmed": true,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false,
+    "repeating": false
+  },
+  {
+    "id": 2,
+    "name": "kaak",
+    "description": "",
+    "start_time": [
+      2024,
+      6,
+      11,
+      44,
+      48,
+      26893393,
+      1,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "whole_duration": [
+      9,
+      999018434
+    ],
+    "finish_time": [
+      2024,
+      6,
+      11,
+      44,
+      58,
+      25911827,
+      1,
+      0,
+      0
+    ],
+    "needs_confirmation": false,
+    "already_confirmed": true,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false,
+    "repeating": false
+  },
+  {
+    "id": 3,
+    "name": "r",
+    "description": "",
+    "start_time": [
+      2024,
+      6,
+      11,
+      46,
+      34,
+      407852479,
+      1,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "whole_duration": [
+      9,
+      999105104
+    ],
+    "finish_time": [
+      2024,
+      6,
+      11,
+      46,
+      44,
+      406957583,
+      1,
+      0,
+      0
+    ],
+    "needs_confirmation": false,
+    "already_confirmed": true,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false,
+    "repeating": false
+  },
+  {
+    "id": 4,
+    "name": "kaak",
+    "description": "",
+    "start_time": [
+      2024,
+      6,
+      11,
+      48,
+      33,
+      705201019,
+      1,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "whole_duration": [
+      4,
+      998790175
+    ],
+    "finish_time": [
+      2024,
+      6,
+      11,
+      48,
+      38,
+      703991194,
+      1,
+      0,
+      0
+    ],
+    "needs_confirmation": false,
+    "already_confirmed": true,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false,
+    "repeating": false
+  },
+  {
+    "id": 5,
+    "name": "meem",
+    "description": "",
+    "start_time": [
+      2024,
+      6,
+      11,
+      49,
+      5,
+      254578361,
+      1,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "whole_duration": [
+      5,
+      999044954
+    ],
+    "finish_time": [
+      2024,
+      6,
+      11,
+      49,
+      11,
+      253623315,
+      1,
+      0,
+      0
+    ],
+    "needs_confirmation": false,
+    "already_confirmed": true,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false,
+    "repeating": false
+  },
+  {
+    "id": 6,
+    "name": "miim",
+    "description": "",
+    "start_time": [
+      2024,
+      6,
+      11,
+      59,
+      55,
+      605610169,
+      1,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "whole_duration": [
+      9,
+      999094592
+    ],
+    "finish_time": [
+      2024,
+      6,
+      12,
+      0,
+      5,
+      604704761,
+      1,
+      0,
+      0
+    ],
+    "needs_confirmation": false,
+    "already_confirmed": true,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false,
+    "repeating": false
+  },
+  {
+    "id": 7,
+    "name": "moom",
+    "description": "",
+    "start_time": [
+      2024,
+      6,
+      12,
+      0,
+      43,
+      46009927,
+      1,
+      0,
+      0
+    ],
+    "reminder_type": "Duration",
+    "whole_duration": [
+      9,
+      999070252
+    ],
+    "finish_time": [
+      2024,
+      6,
+      12,
+      0,
+      53,
+      45080179,
+      1,
+      0,
+      0
+    ],
+    "needs_confirmation": false,
+    "already_confirmed": true,
+    "delete_flag": false,
+    "restart_flag": false,
+    "paused": false,
+    "repeating": false
+  }
+]
