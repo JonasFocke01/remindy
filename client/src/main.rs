@@ -149,10 +149,10 @@ fn alert_user(reminder: &Reminder) {
         let _trash_bin = msgbox::create(reminder.name(), "", msgbox::IconType::Info);
 
         // This is works only with i3-wm
-        // let _ = Command::new("i3-msg")
-        //     .arg("workspace")
-        //     .arg("musik")
-        //     .stdout(Stdio::null())
-        //     .spawn();
+        let _ = Command::new("i3-msg")
+            .arg("workspace")
+            .arg("musik")
+            .stdout(Stdio::null())
+            .spawn();
     }
 }
