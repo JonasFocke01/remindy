@@ -111,7 +111,7 @@ async fn main() {
         .route("/reminders/:id/confirm", put(confirm_reminder_finish_event))
         .layer(axum::middleware::from_fn_with_state(
             Arc::clone(&reminders),
-            write_reminder_db_endpoint,
+            write_reminder_db_middleware,
         ))
         .route("/past_event", get(get_past_event))
         .route("/reminders", get(all_reminder))
@@ -135,7 +135,7 @@ async fn main() {
     }
 }
 
-pub async fn write_reminder_db_endpoint(
+pub async fn write_reminder_db_middleware(
     State(reminders): State<Arc<Mutex<Vec<Reminder>>>>,
     req: Request<axum::body::Body>,
     next: Next,
