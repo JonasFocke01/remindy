@@ -324,7 +324,7 @@ checksum = "4bfbf56724aa9eca8afa4fcfadeb479e722935bb2a0900c2d37e0cc477af0688"
 
 [[package]]
 name = "client"
-version = "0.1.0"
+version = "3.0.0"
 dependencies = [
  "colored",
  "crossterm",
@@ -1761,7 +1761,7 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 
 [[package]]
 name = "reminder"
-version = "0.0.1"
+version = "3.0.0"
 dependencies = [
  "colored",
  "home",

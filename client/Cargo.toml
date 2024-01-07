@@ -1,6 +1,6 @@
 [package]
 name = "client"
-version = "0.1.0"
+version = "3.0.0"
 edition = "2021"
 authors = ["Jonas Focke <test-test@test.com>"]
 description = "Client for a timer/reminder program with vim-oriented shortcuts for the terminal"
