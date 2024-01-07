@@ -20,7 +20,8 @@ use reminders::build_reminder_list;
 mod key_reader;
 use key_reader::read_input;
 
-const IP: &str = "127.0.0.1";
+// TODO: IP wants to be configurable
+const IP: &str = "192.168.2.95";
 
 pub fn main() {
     let mut cursor_position: usize = 0;
