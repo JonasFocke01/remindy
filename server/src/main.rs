@@ -45,6 +45,7 @@ use reminder::{past_event::PastEvent, reminder::Reminder, root_path, PORT, REMIN
 #[tokio::main]
 async fn main() {
     println!("starting...");
+    println!("version: {}", env!("CARGO_PKG_VERSION"));
     let reminders: Arc<Mutex<Vec<Reminder>>> = if let Some(reminders) =
         Reminder::from_file(format!("{}/{REMINDER_DB_FILE}", root_path()).as_str())
     {
@@ -158,5 +159,5 @@ pub fn write_reminder_db(reminders: Vec<Reminder>) {
         format!("{}/{REMINDER_DB_FILE}", root_path()).as_str(),
         serialized_reminders,
     );
-    println!("Wrote reminder db")
+    print!(" w")
 }

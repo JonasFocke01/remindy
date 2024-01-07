@@ -54,8 +54,8 @@ pub async fn add_reminder(
 
     let new_reminder = Reminder::from_api_reminder(new_id, api_reminder);
     reminders.push(new_reminder.clone());
-    *past_event = PastEvent::ReminderCreated(new_reminder);
-    println!("trying to add reminder");
+    *past_event = PastEvent::ReminderCreated(new_reminder.clone());
+    print!("\nn ({}) ", new_reminder.name());
     StatusCode::OK
 }
 
@@ -76,6 +76,7 @@ pub async fn restart_reminder(
         } else {
             reminder.set_restart_flag(true)
         }
+        print!("\nrs ({})", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -91,6 +92,7 @@ pub async fn force_restart_reminder(
     };
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
         reminder.restart();
+        print!("\nfrs ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -114,6 +116,7 @@ pub async fn rename_reminder(
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
         reminder.set_name(name.clone());
         *past_event = PastEvent::ReminderEdited(reminder.clone());
+        print!("\nrn ({}) ", name);
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -128,6 +131,7 @@ pub async fn reset_reminder_flags(State((reminders, _)): ApiState) -> StatusCode
         reminder.set_restart_flag(false);
         reminder.set_delete_flag(false);
     }
+    print!("\nrrf ");
     StatusCode::OK
 }
 
@@ -144,6 +148,7 @@ pub async fn snooze_reminder(
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
         reminder.snooze();
         *past_event = PastEvent::ReminderSnooze(reminder.clone());
+        print!("\ns ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -162,6 +167,7 @@ pub async fn delete_reminder(
     };
     let reminders_clone = reminders.clone();
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+        print!("\nd ({}) ", reminder.name());
         if reminder.delete_flag() {
             *past_event = PastEvent::ReminderDeleted(reminder.clone());
             let Some(index) = reminders_clone
@@ -199,6 +205,7 @@ pub async fn retime_reminder(
         reminder.set_whole_duration(retime_object.duration);
         reminder.set_reminder_type(retime_object.reminder_type.clone());
         *past_event = PastEvent::ReminderEdited(reminder.clone());
+        print!("\nrt ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -218,6 +225,7 @@ pub async fn pause_reminder(
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
         reminder.toggle_pause();
         *past_event = PastEvent::ReminderPause(reminder.clone());
+        print!("\n' ' ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -240,6 +248,7 @@ pub async fn toggle_reminder_repeat(
                 *past_event = PastEvent::ReminderRepeatToggle(reminder.clone());
             }
         }
+        print!("\ne ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -262,6 +271,7 @@ pub async fn push_reminder_duration(
             return StatusCode::INTERNAL_SERVER_ERROR;
         };
         reminder.set_finish_time(reminder.finish_time().saturating_add(duration));
+        print!("\n+ ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -284,6 +294,7 @@ pub async fn cut_reminder_duration(
             return StatusCode::INTERNAL_SERVER_ERROR;
         };
         reminder.set_finish_time(reminder.finish_time().saturating_sub(duration));
+        print!("\n- ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -303,6 +314,7 @@ pub async fn alter_reminder_description(
     };
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
         reminder.set_description(new_description.clone());
+        print!("\n\\n ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -318,6 +330,7 @@ pub async fn confirm_reminder_finish_event(
     };
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
         reminder.confirm_finish_event();
+        print!("\nc ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
