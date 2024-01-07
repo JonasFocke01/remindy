@@ -29,7 +29,7 @@ pub fn read_input(
     selected_reminder: &Reminder,
     reminder_amount: usize,
     cursor_position: &mut usize,
-    request_client: &mut reqwest::blocking::Client,
+    request_client: &reqwest::blocking::Client,
 ) {
     if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
         #[allow(clippy::single_match, clippy::wildcard_enum_match_arm)]
@@ -263,7 +263,7 @@ pub fn read_input(
 fn read_re_mode_input(
     stdout: &mut Stdout,
     selected_reminder: &Reminder,
-    request_client: &mut reqwest::blocking::Client,
+    request_client: &reqwest::blocking::Client,
 ) {
     if let Ok(Event::Key(event)) = read() {
         #[allow(clippy::wildcard_enum_match_arm)]
