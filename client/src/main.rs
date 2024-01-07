@@ -2,6 +2,10 @@ use std::{
     cmp::Ordering,
     fs::File,
     io::{BufReader, Write},
+    process::{Command, Stdio},
+    sync::{Arc, Mutex},
+    thread,
+    time::Duration,
 };
 
 use crossterm::{
@@ -26,39 +30,12 @@ const IP: &str = "192.168.2.95";
 pub fn main() {
     let mut cursor_position: usize = 0;
     let mut stdout = std::io::stdout();
-    let mut request_client = reqwest::blocking::Client::new();
+    let request_client = reqwest::blocking::Client::new();
+    let reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(vec![]));
+    let past_event: Arc<Mutex<PastEvent>> = Arc::new(Mutex::new(PastEvent::None));
+    spawn_async_reminder_fetch(Arc::clone(&reminders), Arc::clone(&past_event));
     loop {
         let _trash_bin = disable_raw_mode().is_ok();
-        let mut reminders: Vec<Reminder> =
-            reqwest::blocking::get(format!("http://{IP}:{PORT}/reminders"))
-                .unwrap()
-                .json()
-                .unwrap();
-        for reminder in &reminders {
-            if reminder.needs_confirmation() {
-                alert_user(reminder);
-                request_client
-                    .put(format!(
-                        "http://{IP}:{PORT}/reminders/{}/confirm",
-                        reminder.id()
-                    ))
-                    .send()
-                    .unwrap();
-            }
-        }
-        reminders.sort_by(|a, b| {
-            if a.finish_time().cmp(&b.finish_time()) == Ordering::Less {
-                Ordering::Greater
-            } else {
-                Ordering::Less
-            }
-        });
-
-        let past_event: PastEvent =
-            reqwest::blocking::get(format!("http://{IP}:{PORT}/past_event"))
-                .unwrap()
-                .json()
-                .unwrap();
 
         let _trash_bin = enable_raw_mode().is_ok();
         execute!(
@@ -68,37 +45,90 @@ pub fn main() {
             cursor::MoveTo(0, 0)
         )
         .unwrap();
-        if stdout
-            .write_all(build_status_box(&past_event).as_bytes())
-            .is_err()
-        {
-            return;
-        }
 
-        if stdout
-            .write_all(build_reminder_list(&reminders, cursor_position).as_bytes())
-            .is_err()
-        {
-            return;
-        }
-        if let Some(selected_reminder) = reminders.get(cursor_position) {
-            read_input(
-                &mut stdout,
-                selected_reminder,
-                reminders.len(),
-                &mut cursor_position,
-                &mut request_client,
-            );
-        } else {
-            read_input(
-                &mut stdout,
-                &Reminder::default(),
-                reminders.len(),
-                &mut cursor_position,
-                &mut request_client,
-            );
+        if let Ok(past_event) = past_event.lock() {
+            if stdout
+                .write_all(build_status_box(&past_event).as_bytes())
+                .is_err()
+            {
+                return;
+            }
+        };
+
+        if let Ok(reminders) = reminders.lock() {
+            if stdout
+                .write_all(build_reminder_list(&reminders, cursor_position).as_bytes())
+                .is_err()
+            {
+                return;
+            }
+            if let Some(selected_reminder) = reminders.get(cursor_position) {
+                read_input(
+                    &mut stdout,
+                    selected_reminder,
+                    reminders.len(),
+                    &mut cursor_position,
+                    &request_client,
+                );
+            } else {
+                read_input(
+                    &mut stdout,
+                    &Reminder::default(),
+                    reminders.len(),
+                    &mut cursor_position,
+                    &request_client,
+                );
+            }
         }
     }
+}
+
+fn spawn_async_reminder_fetch(
+    reminders: Arc<Mutex<Vec<Reminder>>>,
+    past_event: Arc<Mutex<PastEvent>>,
+) {
+    thread::spawn(move || {
+        let request_client = reqwest::blocking::Client::new();
+        loop {
+            let mut new_reminders: Vec<Reminder> =
+                reqwest::blocking::get(format!("http://{IP}:{PORT}/reminders"))
+                    .unwrap()
+                    .json()
+                    .unwrap();
+            for reminder in &new_reminders {
+                if reminder.needs_confirmation() {
+                    alert_user(reminder);
+                    request_client
+                        .put(format!(
+                            "http://{IP}:{PORT}/reminders/{}/confirm",
+                            reminder.id()
+                        ))
+                        .send()
+                        .unwrap();
+                }
+            }
+            new_reminders.sort_by(|a, b| {
+                if a.finish_time().cmp(&b.finish_time()) == Ordering::Less {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
+                }
+            });
+            if let Ok(mut reminders) = reminders.lock() {
+                *reminders = new_reminders;
+            }
+
+            let new_past_event: PastEvent =
+                reqwest::blocking::get(format!("http://{IP}:{PORT}/past_event"))
+                    .unwrap()
+                    .json()
+                    .unwrap();
+            if let Ok(mut past_event) = past_event.lock() {
+                *past_event = new_past_event;
+            }
+            thread::sleep(Duration::from_secs(1))
+        }
+    });
 }
 
 fn alert_user(reminder: &Reminder) {
