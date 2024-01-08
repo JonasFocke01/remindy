@@ -55,6 +55,7 @@ pub fn main() {
             }
         };
 
+        let mut should_fetch_data = false;
         if let Ok(reminders) = reminders.lock() {
             if stdout
                 .write_all(build_reminder_list(&reminders, cursor_position).as_bytes())
@@ -63,7 +64,7 @@ pub fn main() {
                 return;
             }
             if let Some(selected_reminder) = reminders.get(cursor_position) {
-                read_input(
+                should_fetch_data = read_input(
                     &mut stdout,
                     selected_reminder,
                     reminders.len(),
@@ -71,7 +72,7 @@ pub fn main() {
                     &request_client,
                 );
             } else {
-                read_input(
+                should_fetch_data = read_input(
                     &mut stdout,
                     &Reminder::default(),
                     reminders.len(),
@@ -80,6 +81,9 @@ pub fn main() {
                 );
             }
         }
+        if should_fetch_data {
+            fetch_data(&reminders, &past_event);
+        }
     }
 }
 
@@ -87,48 +91,50 @@ fn spawn_async_reminder_fetch(
     reminders: Arc<Mutex<Vec<Reminder>>>,
     past_event: Arc<Mutex<PastEvent>>,
 ) {
-    thread::spawn(move || {
-        let request_client = reqwest::blocking::Client::new();
-        loop {
-            let mut new_reminders: Vec<Reminder> =
-                reqwest::blocking::get(format!("http://{IP}:{PORT}/reminders"))
-                    .unwrap()
-                    .json()
-                    .unwrap();
-            for reminder in &new_reminders {
-                if reminder.needs_confirmation() {
-                    alert_user(reminder);
-                    request_client
-                        .put(format!(
-                            "http://{IP}:{PORT}/reminders/{}/confirm",
-                            reminder.id()
-                        ))
-                        .send()
-                        .unwrap();
-                }
-            }
-            new_reminders.sort_by(|a, b| {
-                if a.finish_time().cmp(&b.finish_time()) == Ordering::Less {
-                    Ordering::Greater
-                } else {
-                    Ordering::Less
-                }
-            });
-            if let Ok(mut reminders) = reminders.lock() {
-                *reminders = new_reminders;
-            }
+    thread::spawn(move || loop {
+        fetch_data(&reminders, &past_event);
+        thread::sleep(Duration::from_secs(5));
+    });
+}
 
-            let new_past_event: PastEvent =
-                reqwest::blocking::get(format!("http://{IP}:{PORT}/past_event"))
-                    .unwrap()
-                    .json()
-                    .unwrap();
-            if let Ok(mut past_event) = past_event.lock() {
-                *past_event = new_past_event;
-            }
-            thread::sleep(Duration::from_secs(1))
+fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent>>) {
+    let request_client = reqwest::blocking::Client::new();
+    let mut new_reminders: Vec<Reminder> =
+        reqwest::blocking::get(format!("http://{IP}:{PORT}/reminders"))
+            .unwrap()
+            .json()
+            .unwrap();
+    for reminder in &new_reminders {
+        if reminder.needs_confirmation() {
+            alert_user(reminder);
+            request_client
+                .put(format!(
+                    "http://{IP}:{PORT}/reminders/{}/confirm",
+                    reminder.id()
+                ))
+                .send()
+                .unwrap();
+        }
+    }
+    new_reminders.sort_by(|a, b| {
+        if a.finish_time().cmp(&b.finish_time()) == Ordering::Less {
+            Ordering::Greater
+        } else {
+            Ordering::Less
         }
     });
+    if let Ok(mut reminders) = reminders.lock() {
+        *reminders = new_reminders;
+    }
+
+    let new_past_event: PastEvent =
+        reqwest::blocking::get(format!("http://{IP}:{PORT}/past_event"))
+            .unwrap()
+            .json()
+            .unwrap();
+    if let Ok(mut past_event) = past_event.lock() {
+        *past_event = new_past_event;
+    }
 }
 
 fn alert_user(reminder: &Reminder) {
