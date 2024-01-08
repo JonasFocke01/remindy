@@ -159,7 +159,9 @@ pub fn read_input(
                     return false;
                 }
                 KeyCode::Char('d') => {
-                    *cursor_position = cursor_position.saturating_sub(1);
+                    if *cursor_position == reminder_amount - 1 && selected_reminder.delete_flag() {
+                        *cursor_position = cursor_position.saturating_sub(1);
+                    }
                     request_client
                         .delete(format!(
                             "http://{IP}:{PORT}/reminders/{}",
