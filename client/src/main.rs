@@ -139,25 +139,39 @@ fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent
 
 fn alert_user(reminder: &Reminder) {
     if let Ok((_stream, audio_stream_handle)) = OutputStream::try_default() {
-        let Ok(file) = File::open(format!("{}/{AUDIO_FILE}", root_path())) else {
-            return;
-        };
-        let audio_buf = BufReader::new(file);
-        let Ok(sink) = Sink::try_new(&audio_stream_handle) else {
-            return;
-        };
-        let Ok(audio_source) = Decoder::new(audio_buf) else {
-            return;
-        };
-        sink.append(audio_source);
-        sink.set_volume(0.7);
+        #[cfg(target_os = "linux")]
+        {
+            let Ok(file) = File::open(format!("{}/{AUDIO_FILE}", root_path())) else {
+                return;
+            };
+            let audio_buf = BufReader::new(file);
+            let Ok(sink) = Sink::try_new(&audio_stream_handle) else {
+                return;
+            };
+            let Ok(audio_source) = Decoder::new(audio_buf) else {
+                return;
+            };
+            sink.append(audio_source);
+            sink.set_volume(0.7);
 
-        let _trash_bin = msgbox::create(reminder.name(), "", msgbox::IconType::Info);
+            let _trash_bin = msgbox::create(reminder.name(), "", msgbox::IconType::Info);
+        }
 
-        // This is works only with i3-wm
+        #[cfg(feature = "i3")]
         let _ = Command::new("i3-msg")
             .arg("workspace")
+            // TODO: `musik` should be configurable
             .arg("musik")
+            .stdout(Stdio::null())
+            .spawn();
+
+        #[cfg(target_os = "macos")]
+        let _ = Command::new("osascript")
+            .arg("-e")
+            .arg(format!(
+                "display notification \"{}\" sound name \"Bottle\"",
+                reminder.name()
+            ))
             .stdout(Stdio::null())
             .spawn();
     }
