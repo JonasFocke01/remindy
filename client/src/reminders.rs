@@ -27,7 +27,7 @@ pub fn build_reminder_list(reminders: &[Reminder], cursor_position: usize) -> St
                 if let Some(time_left) = time_left {
                     if time_left.whole_days() > 0 {
                         let Ok(finish_time) = reminder.finish_time().format(&time_format) else {
-                            return String::from("kaak");
+                            return String::from("");
                         };
                         format!(
                             "                        {}\n\r{}",
