@@ -25,8 +25,8 @@ use reminders::build_reminder_list;
 mod key_reader;
 use key_reader::read_input;
 
-// TODO: IP wants to be configurable
-const IP: &str = "jonrrrs.duckdns.org";
+// TODO: DOMAIN wants to be configurable
+const DOMAIN: &str = "jonrrrs.duckdns.org";
 
 pub fn main() {
     let mut cursor_position: usize = 0;
@@ -101,7 +101,7 @@ fn spawn_async_reminder_fetch(
 fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent>>) {
     let request_client = reqwest::blocking::Client::new();
     let mut new_reminders: Vec<Reminder> =
-        reqwest::blocking::get(format!("http://{IP}:{PORT}/reminders"))
+        reqwest::blocking::get(format!("http://{DOMAIN}:{PORT}/reminders"))
             .unwrap()
             .json()
             .unwrap();
@@ -110,7 +110,7 @@ fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent
             alert_user(reminder);
             request_client
                 .put(format!(
-                    "http://{IP}:{PORT}/reminders/{}/confirm",
+                    "http://{DOMAIN}:{PORT}/reminders/{}/confirm",
                     reminder.id()
                 ))
                 .send()
@@ -129,7 +129,7 @@ fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent
     }
 
     let new_past_event: PastEvent =
-        reqwest::blocking::get(format!("http://{IP}:{PORT}/past_event"))
+        reqwest::blocking::get(format!("http://{DOMAIN}:{PORT}/past_event"))
             .unwrap()
             .json()
             .unwrap();

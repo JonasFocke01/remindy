@@ -17,7 +17,7 @@ use reminder::{
     PORT,
 };
 
-use crate::IP;
+use crate::DOMAIN;
 
 /// This Reads any input detected on the terminal window.
 /// This will block when a known key combination is found and there are follow up decisions to make
@@ -122,7 +122,7 @@ pub fn read_input(
                         reminder_type = ReminderType::Duration;
                     }
                     request_client
-                        .post(format!("http://{IP}:{PORT}/reminders"))
+                        .post(format!("http://{DOMAIN}:{PORT}/reminders"))
                         .json(&ApiReminder {
                             name,
                             description: String::new(),
@@ -136,7 +136,7 @@ pub fn read_input(
                 KeyCode::Char(' ') => {
                     request_client
                         .put(format!(
-                            "http://{IP}:{PORT}/reminders/{}/pause",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/pause",
                             selected_reminder.id()
                         ))
                         .send()
@@ -164,7 +164,7 @@ pub fn read_input(
                     }
                     request_client
                         .delete(format!(
-                            "http://{IP}:{PORT}/reminders/{}",
+                            "http://{DOMAIN}:{PORT}/reminders/{}",
                             selected_reminder.id()
                         ))
                         .send()
@@ -174,7 +174,7 @@ pub fn read_input(
                 KeyCode::Char('s') => {
                     request_client
                         .put(format!(
-                            "http://{IP}:{PORT}/reminders/{}/snooze",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/snooze",
                             selected_reminder.id()
                         ))
                         .send()
@@ -184,7 +184,7 @@ pub fn read_input(
                 KeyCode::Char('e') => {
                     request_client
                         .put(format!(
-                            "http://{IP}:{PORT}/reminders/{}/toggle_repeat",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/toggle_repeat",
                             selected_reminder.id()
                         ))
                         .send()
@@ -212,7 +212,7 @@ pub fn read_input(
                         .read_to_string(&mut new_description);
                     request_client
                         .patch(format!(
-                            "http://{IP}:{PORT}/reminders/{}/description",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/description",
                             selected_reminder.id()
                         ))
                         .json(&new_description)
@@ -235,7 +235,7 @@ pub fn read_input(
                     let duration: core::time::Duration = parsed_duration.into();
                     request_client
                         .patch(format!(
-                            "http://{IP}:{PORT}/reminders/{}/push_duration",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/push_duration",
                             selected_reminder.id()
                         ))
                         .json(&duration)
@@ -258,7 +258,7 @@ pub fn read_input(
                     let duration: core::time::Duration = parsed_duration.into();
                     request_client
                         .patch(format!(
-                            "http://{IP}:{PORT}/reminders/{}/cut_duration",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/cut_duration",
                             selected_reminder.id()
                         ))
                         .json(&duration)
@@ -268,7 +268,7 @@ pub fn read_input(
                 }
                 KeyCode::Esc => {
                     request_client
-                        .put(format!("http://{IP}:{PORT}/reminders/reset_flags"))
+                        .put(format!("http://{DOMAIN}:{PORT}/reminders/reset_flags"))
                         .send()
                         .unwrap();
                     return true;
@@ -293,7 +293,7 @@ fn read_re_mode_input(
             KeyCode::Char('s') => {
                 request_client
                     .put(format!(
-                        "http://{IP}:{PORT}/reminders/{}/restart",
+                        "http://{DOMAIN}:{PORT}/reminders/{}/restart",
                         selected_reminder.id()
                     ))
                     .send()
@@ -308,7 +308,7 @@ fn read_re_mode_input(
                 name = name.replace('\n', "");
                 request_client
                     .patch(format!(
-                        "http://{IP}:{PORT}/reminders/{}/rename",
+                        "http://{DOMAIN}:{PORT}/reminders/{}/rename",
                         selected_reminder.id()
                     ))
                     .json(&name)
@@ -340,7 +340,7 @@ fn read_re_mode_input(
                     #[allow(clippy::arithmetic_side_effects)]
                     request_client
                         .patch(format!(
-                            "http://{IP}:{PORT}/reminders/{}/retime",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/retime",
                             selected_reminder.id()
                         ))
                         .json(&TimeObject {
@@ -369,7 +369,7 @@ fn read_re_mode_input(
                     #[allow(clippy::arithmetic_side_effects)]
                     request_client
                         .patch(format!(
-                            "http://{IP}:{PORT}/reminders/{}/retime",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/retime",
                             selected_reminder.id()
                         ))
                         .json(&TimeObject {
@@ -390,7 +390,7 @@ fn read_re_mode_input(
                     #[allow(clippy::arithmetic_side_effects)]
                     request_client
                         .patch(format!(
-                            "http://{IP}:{PORT}/reminders/{}/retime",
+                            "http://{DOMAIN}:{PORT}/reminders/{}/retime",
                             selected_reminder.id()
                         ))
                         .json(&TimeObject {
