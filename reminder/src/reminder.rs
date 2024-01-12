@@ -285,7 +285,11 @@ impl Display for Reminder {
             write!(
                 f,
                 "{:>10}{} {} {}{:<21}{} {}",
-                self.name.clone().green(),
+                if self.repeating() {
+                    self.name.clone().green().clear()
+                } else {
+                    self.name.clone().green()
+                },
                 if self.restart_flag() {
                     "↻".bright_blue()
                 } else if self.delete_flag() {
