@@ -82,6 +82,10 @@ async fn main() {
                 }
             }
         }
+        for reminder in reminders.iter_mut() {
+            reminder.push_back_end_time_if_paused(time::Duration::SECOND);
+            writable = true;
+        }
         if writable {
             write_reminder_db(reminders.clone());
         }
