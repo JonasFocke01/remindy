@@ -124,7 +124,7 @@ async fn main() {
 
     #[allow(clippy::panic)]
     let Ok(listener) = tokio::net::TcpListener::bind(&SocketAddr::new(
-        IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+        IpAddr::V4(Ipv4Addr::new(192, 168, 2, 95)),
         PORT,
     ))
     .await
