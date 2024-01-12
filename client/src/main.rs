@@ -1,8 +1,9 @@
+#[cfg(feature = "i3")]
+use std::process::{Command, Stdio};
 use std::{
     cmp::Ordering,
     fs::File,
     io::{BufReader, Write},
-    process::{Command, Stdio},
     sync::{Arc, Mutex},
     thread,
     time::Duration,
