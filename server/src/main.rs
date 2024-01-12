@@ -26,22 +26,6 @@ use crate::api::{
 };
 use reminder::{past_event::PastEvent, reminder::Reminder, root_path, PORT, REMINDER_DB_FILE};
 
-#[warn(
-    clippy::pedantic,
-    clippy::arithmetic_side_effects,
-    clippy::clone_on_ref_ptr,
-    clippy::expect_used,
-    clippy::float_cmp_const,
-    clippy::indexing_slicing,
-    clippy::panic,
-    clippy::string_add,
-    clippy::string_to_string,
-    clippy::todo,
-    clippy::unimplemented,
-    clippy::unreachable,
-    clippy::unwrap_used,
-    clippy::wildcard_enum_match_arm
-)]
 #[tokio::main]
 async fn main() {
     println!("starting...");
@@ -87,7 +71,7 @@ async fn main() {
             writable = true;
         }
         if writable {
-            write_reminder_db(reminders.clone());
+            write_reminder_db(&reminders);
         }
         drop(reminders);
         std::thread::sleep(std::time::Duration::from_secs(1));
@@ -140,28 +124,29 @@ async fn main() {
     }
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn write_reminder_db_middleware(
     State(reminders): State<Arc<Mutex<Vec<Reminder>>>>,
     req: Request<axum::body::Body>,
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let res = next.run(req).await;
+    let result = next.run(req).await;
     if let Ok(mut reminders) = reminders.lock() {
         for reminder in reminders.iter_mut() {
             reminder.push_back_end_time_if_paused(time::Duration::seconds(1));
         }
-        write_reminder_db(reminders.clone());
+        write_reminder_db(&reminders);
     }
-    Ok(res)
+    Ok(result)
 }
 
-pub fn write_reminder_db(reminders: Vec<Reminder>) {
+pub fn write_reminder_db(reminders: &Vec<Reminder>) {
     let Ok(serialized_reminders) = serde_json::to_string_pretty(&reminders) else {
-        panic!("failed to serialize reminders")
+        return;
     };
     let _trash_bin = write(
         format!("{}/{REMINDER_DB_FILE}", root_path()).as_str(),
         serialized_reminders,
     );
-    print!(" w")
+    print!(" w");
 }

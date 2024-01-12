@@ -1,5 +1,6 @@
 use reminder::past_event::PastEvent;
 
+#[allow(clippy::module_name_repetitions)]
 pub fn build_status_box(last_event: &PastEvent) -> String {
     let mut result = String::new();
     result.push_str("           =======================================\n\r");

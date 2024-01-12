@@ -1,3 +1,19 @@
 [workspace]
 resolver = "2"
 members = [ "client","reminder", "server"]
+
+[workspace.lints.clippy]
+pedantic = "warn"
+arithmetic_side_effects = "warn"
+clone_on_ref_ptr = "warn"
+expect_used = "warn"
+float_cmp_const = "warn"
+indexing_slicing = "warn"
+panic = "warn"
+string_add = "warn"
+string_to_string = "warn"
+todo = "warn"
+unimplemented = "warn"
+unreachable = "warn"
+unwrap_used = "warn"
+wildcard_enum_match_arm = "warn"

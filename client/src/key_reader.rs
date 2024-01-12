@@ -121,7 +121,7 @@ pub fn read_input(
                         finish_time = now + parsed_duration;
                         reminder_type = ReminderType::Duration;
                     }
-                    request_client
+                    if request_client
                         .post(format!("http://{DOMAIN}:{PORT}/reminders"))
                         .json(&ApiReminder {
                             name,
@@ -130,18 +130,24 @@ pub fn read_input(
                             reminder_type,
                         })
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    false
                 }
                 KeyCode::Char(' ') => {
-                    request_client
+                    if request_client
                         .put(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/pause",
                             selected_reminder.id()
                         ))
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
                 }
 
                 KeyCode::Char('r') => {
@@ -153,43 +159,54 @@ pub fn read_input(
                     return false;
                 }
                 KeyCode::Char('j') => {
-                    if *cursor_position != reminder_amount - 1 {
-                        *cursor_position = cursor_position.saturating_add(1)
+                    if *cursor_position != reminder_amount.saturating_sub(1) {
+                        *cursor_position = cursor_position.saturating_add(1);
                     }
                     return false;
                 }
                 KeyCode::Char('d') => {
-                    if *cursor_position == reminder_amount - 1 && selected_reminder.delete_flag() {
+                    if *cursor_position == reminder_amount.saturating_sub(1)
+                        && selected_reminder.delete_flag()
+                    {
                         *cursor_position = cursor_position.saturating_sub(1);
                     }
-                    request_client
+                    if request_client
                         .delete(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}",
                             selected_reminder.id()
                         ))
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 KeyCode::Char('s') => {
-                    request_client
+                    if request_client
                         .put(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/snooze",
                             selected_reminder.id()
                         ))
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 KeyCode::Char('e') => {
-                    request_client
+                    if request_client
                         .put(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/toggle_repeat",
                             selected_reminder.id()
                         ))
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 KeyCode::Enter => {
                     let Ok(process) = Command::new("vipe")
@@ -210,15 +227,18 @@ pub fn read_input(
                         .stdout
                         .expect("Cant read pipe from editor")
                         .read_to_string(&mut new_description);
-                    request_client
+                    if request_client
                         .patch(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/description",
                             selected_reminder.id()
                         ))
                         .json(&new_description)
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 KeyCode::Char('+') => {
                     let _trash_bin = stdout.write_all(b"Add duration (1h10m15s): ");
@@ -233,15 +253,18 @@ pub fn read_input(
                         return false;
                     };
                     let duration: core::time::Duration = parsed_duration.into();
-                    request_client
+                    if request_client
                         .patch(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/push_duration",
                             selected_reminder.id()
                         ))
                         .json(&duration)
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 KeyCode::Char('-') => {
                     let _trash_bin = stdout.write_all(b"Subtract duration (1h10m15s): ");
@@ -256,32 +279,38 @@ pub fn read_input(
                         return false;
                     };
                     let duration: core::time::Duration = parsed_duration.into();
-                    request_client
+                    if request_client
                         .patch(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/cut_duration",
                             selected_reminder.id()
                         ))
                         .json(&duration)
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 KeyCode::Esc => {
-                    request_client
+                    if request_client
                         .put(format!("http://{DOMAIN}:{PORT}/reminders/reset_flags"))
                         .send()
-                        .unwrap();
-                    return true;
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
                 }
                 _ => return false,
             };
-        } else {
-            false
         }
+        false
     } else {
         false
     }
 }
+#[allow(clippy::too_many_lines)]
 fn read_re_mode_input(
     stdout: &mut Stdout,
     selected_reminder: &Reminder,
@@ -291,13 +320,12 @@ fn read_re_mode_input(
         #[allow(clippy::wildcard_enum_match_arm)]
         match event.code {
             KeyCode::Char('s') => {
-                request_client
+                let _ = request_client
                     .put(format!(
                         "http://{DOMAIN}:{PORT}/reminders/{}/restart",
                         selected_reminder.id()
                     ))
-                    .send()
-                    .unwrap();
+                    .send();
             }
             KeyCode::Char('n') => {
                 let _trash_bin = stdout.write_all(b"New name: ");
@@ -306,14 +334,13 @@ fn read_re_mode_input(
                 let mut name = String::new();
                 let _trash_bin = stdin().read_line(&mut name);
                 name = name.replace('\n', "");
-                request_client
+                let _ = request_client
                     .patch(format!(
                         "http://{DOMAIN}:{PORT}/reminders/{}/rename",
                         selected_reminder.id()
                     ))
                     .json(&name)
-                    .send()
-                    .unwrap();
+                    .send();
             }
             KeyCode::Char('t') => {
                 let _trash_bin = stdout.write_all(
@@ -338,7 +365,7 @@ fn read_re_mode_input(
                     };
                     finish_time = finish_time.replace_time(new_finish_time);
                     #[allow(clippy::arithmetic_side_effects)]
-                    request_client
+                    let _ = request_client
                         .patch(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/retime",
                             selected_reminder.id()
@@ -348,8 +375,7 @@ fn read_re_mode_input(
                             finish_time,
                             duration: finish_time - now,
                         })
-                        .send()
-                        .unwrap();
+                        .send();
                 } else if time_input
                     .chars()
                     .all(|e| e.is_ascii_digit() || e == '.' || e == ':' || e == ' ')
@@ -367,7 +393,7 @@ fn read_re_mode_input(
                     finish_time = finish_time.replace_date(new_finish_date_time.date());
                     finish_time = finish_time.replace_time(new_finish_date_time.time());
                     #[allow(clippy::arithmetic_side_effects)]
-                    request_client
+                    let _ = request_client
                         .patch(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/retime",
                             selected_reminder.id()
@@ -377,8 +403,7 @@ fn read_re_mode_input(
                             finish_time,
                             duration: finish_time - now,
                         })
-                        .send()
-                        .unwrap();
+                        .send();
                 } else {
                     let Ok(parsed_duration) = DurationString::from_string(time_input) else {
                         return;
@@ -388,7 +413,7 @@ fn read_re_mode_input(
                         return;
                     };
                     #[allow(clippy::arithmetic_side_effects)]
-                    request_client
+                    let _ = request_client
                         .patch(format!(
                             "http://{DOMAIN}:{PORT}/reminders/{}/retime",
                             selected_reminder.id()
@@ -398,8 +423,7 @@ fn read_re_mode_input(
                             finish_time: now + d,
                             duration,
                         })
-                        .send()
-                        .unwrap();
+                        .send();
                 }
             }
             _ => (),

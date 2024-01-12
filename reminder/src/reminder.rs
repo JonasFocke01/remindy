@@ -48,6 +48,7 @@ pub struct Reminder {
 }
 
 impl Reminder {
+    #[must_use]
     pub fn new(
         id: usize,
         name: String,
@@ -72,6 +73,7 @@ impl Reminder {
             repeating: false,
         }
     }
+    #[must_use]
     pub fn from_api_reminder(id: usize, value: ApiReminder) -> Self {
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         Self {
@@ -91,15 +93,18 @@ impl Reminder {
             repeating: false,
         }
     }
+    #[must_use]
     pub fn id(&self) -> usize {
         self.id
     }
+    #[must_use]
     pub fn name(&self) -> &str {
         self.name.as_str()
     }
     pub fn set_name(&mut self, name: String) {
         self.name = name;
     }
+    #[must_use]
     pub fn description(&self) -> &str {
         self.description.as_str()
     }
@@ -109,6 +114,8 @@ impl Reminder {
     pub fn set_reminder_type(&mut self, reminder_type: ReminderType) {
         self.reminder_type = reminder_type;
     }
+    #[must_use]
+    #[allow(clippy::arithmetic_side_effects)]
     pub fn remaining_duration(&self) -> Option<Duration> {
         let now = OffsetDateTime::now_utc().to_offset(OFFSET);
         let difference = self.finish_time - now;
@@ -118,6 +125,13 @@ impl Reminder {
             None
         }
     }
+    #[must_use]
+    #[allow(
+        clippy::arithmetic_side_effects,
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        clippy::cast_precision_loss
+    )]
     pub fn remaining_percent(&self) -> usize {
         let difference = self.finish_time - self.start_time;
         if difference.is_positive() {
@@ -139,6 +153,7 @@ impl Reminder {
         self.whole_duration = whole_duration;
         self.already_confirmed = false;
     }
+    #[must_use]
     pub fn finish_time(&self) -> OffsetDateTime {
         self.finish_time
     }
@@ -146,6 +161,7 @@ impl Reminder {
         self.already_confirmed = false;
         self.finish_time = finish_time;
     }
+    #[must_use]
     pub fn needs_confirmation(&self) -> bool {
         self.needs_confirmation
     }
@@ -161,18 +177,21 @@ impl Reminder {
             self.needs_confirmation = true;
         }
     }
+    #[must_use]
     pub fn delete_flag(&self) -> bool {
         self.delete_flag
     }
     pub fn set_delete_flag(&mut self, flag: bool) {
         self.delete_flag = flag;
     }
+    #[must_use]
     pub fn restart_flag(&self) -> bool {
         self.restart_flag
     }
     pub fn set_restart_flag(&mut self, flag: bool) {
         self.restart_flag = flag;
     }
+    #[must_use]
     pub fn repeating(&self) -> bool {
         self.repeating
     }
@@ -226,6 +245,7 @@ impl Reminder {
             self.already_confirmed = false;
         }
     }
+    #[must_use]
     pub fn from_file(filename: &str) -> Option<Vec<Reminder>> {
         if let Ok(reminders_from_file) = std::fs::read_to_string(filename) {
             let Ok(reminders_from_file) =

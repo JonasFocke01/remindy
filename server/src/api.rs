@@ -44,13 +44,9 @@ pub async fn add_reminder(
     let Ok(Json(api_reminder)) = api_reminder else {
         return StatusCode::UNPROCESSABLE_ENTITY;
     };
-    let max_id = reminders
-        .iter()
-        .map(|reminder| reminder.id())
-        .max()
-        .unwrap_or_default();
+    let max_id = reminders.iter().map(Reminder::id).max().unwrap_or_default();
 
-    let new_id = max_id + 1;
+    let new_id = max_id.saturating_add(1);
 
     let new_reminder = Reminder::from_api_reminder(new_id, api_reminder);
     reminders.push(new_reminder.clone());
@@ -72,9 +68,9 @@ pub async fn restart_reminder(
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
         if reminder.restart_flag() {
             *past_event = PastEvent::ReminderEdited(reminder.clone());
-            reminder.restart()
+            reminder.restart();
         } else {
-            reminder.set_restart_flag(true)
+            reminder.set_restart_flag(true);
         }
         print!("\nrs ({})", reminder.name());
         StatusCode::OK
@@ -116,7 +112,7 @@ pub async fn rename_reminder(
     if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
         reminder.set_name(name.clone());
         *past_event = PastEvent::ReminderEdited(reminder.clone());
-        print!("\nrn ({}) ", name);
+        print!("\nrn ({name}) ");
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
@@ -174,7 +170,7 @@ pub async fn delete_reminder(
                 .iter()
                 .position(|s_reminder| s_reminder.id() == reminder.id())
             else {
-                panic!()
+                return StatusCode::NOT_FOUND;
             };
             reminders.remove(index);
         } else {

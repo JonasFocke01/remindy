@@ -100,21 +100,21 @@ fn spawn_async_reminder_fetch(
 
 fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent>>) {
     let request_client = reqwest::blocking::Client::new();
-    let mut new_reminders: Vec<Reminder> =
-        reqwest::blocking::get(format!("http://{DOMAIN}:{PORT}/reminders"))
-            .unwrap()
-            .json()
-            .unwrap();
+    let mut new_reminders: Vec<Reminder> = vec![];
+    if let Ok(response) = reqwest::blocking::get(format!("http://{DOMAIN}:{PORT}/reminders")) {
+        if let Ok(data) = response.json() {
+            new_reminders = data;
+        }
+    }
     for reminder in &new_reminders {
         if reminder.needs_confirmation() {
             alert_user(reminder);
-            request_client
+            let _ = request_client
                 .put(format!(
                     "http://{DOMAIN}:{PORT}/reminders/{}/confirm",
                     reminder.id()
                 ))
-                .send()
-                .unwrap();
+                .send();
         }
     }
     new_reminders.sort_by(|a, b| {
@@ -128,11 +128,12 @@ fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent
         *reminders = new_reminders;
     }
 
-    let new_past_event: PastEvent =
-        reqwest::blocking::get(format!("http://{DOMAIN}:{PORT}/past_event"))
-            .unwrap()
-            .json()
-            .unwrap();
+    let Ok(response) = reqwest::blocking::get(format!("http://{DOMAIN}:{PORT}/past_event")) else {
+        return;
+    };
+    let Ok(new_past_event) = response.json() else {
+        return;
+    };
     if let Ok(mut past_event) = past_event.lock() {
         *past_event = new_past_event;
     }
