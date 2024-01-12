@@ -25,7 +25,7 @@ mod key_reader;
 use key_reader::read_input;
 
 // TODO: IP wants to be configurable
-const IP: &str = "192.168.2.95";
+const IP: &str = "jonrrrs.duckdns.org";
 
 pub fn main() {
     let mut cursor_position: usize = 0;
