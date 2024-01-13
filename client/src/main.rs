@@ -9,11 +9,12 @@ use std::{
     time::Duration,
 };
 
+use config::Config;
 use crossterm::{
     cursor, execute,
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use reminder::{past_event::PastEvent, reminder::Reminder, root_path, AUDIO_FILE, PORT};
+use reminder::{past_event::PastEvent, reminder::Reminder, root_path, AUDIO_FILE};
 
 mod status_box;
 use rodio::{Decoder, OutputStream, Sink};
@@ -25,16 +26,18 @@ use reminders::build_reminder_list;
 mod key_reader;
 use key_reader::read_input;
 
-// TODO: DOMAIN wants to be configurable
-const DOMAIN: &str = "jonrrrs.duckdns.org";
-
 pub fn main() {
+    let config = Arc::new(Mutex::new(Config::new()));
     let mut cursor_position: usize = 0;
     let mut stdout = std::io::stdout();
     let request_client = reqwest::blocking::Client::new();
     let reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(vec![]));
     let past_event: Arc<Mutex<PastEvent>> = Arc::new(Mutex::new(PastEvent::None));
-    spawn_async_reminder_fetch(Arc::clone(&reminders), Arc::clone(&past_event));
+    spawn_async_reminder_fetch(
+        Arc::clone(&reminders),
+        Arc::clone(&past_event),
+        Arc::clone(&config),
+    );
     loop {
         let _trash_bin = disable_raw_mode().is_ok();
 
@@ -64,26 +67,30 @@ pub fn main() {
             {
                 return;
             }
-            if let Some(selected_reminder) = reminders.get(cursor_position) {
-                should_fetch_data = read_input(
-                    &mut stdout,
-                    selected_reminder,
-                    reminders.len(),
-                    &mut cursor_position,
-                    &request_client,
-                );
-            } else {
-                should_fetch_data = read_input(
-                    &mut stdout,
-                    &Reminder::default(),
-                    reminders.len(),
-                    &mut cursor_position,
-                    &request_client,
-                );
-            }
+            if let Ok(config) = config.lock() {
+                if let Some(selected_reminder) = reminders.get(cursor_position) {
+                    should_fetch_data = read_input(
+                        &mut stdout,
+                        selected_reminder,
+                        reminders.len(),
+                        &mut cursor_position,
+                        &request_client,
+                        &(*config),
+                    );
+                } else {
+                    should_fetch_data = read_input(
+                        &mut stdout,
+                        &Reminder::default(),
+                        reminders.len(),
+                        &mut cursor_position,
+                        &request_client,
+                        &(*config),
+                    );
+                }
+            };
         }
         if should_fetch_data {
-            fetch_data(&reminders, &past_event);
+            fetch_data(&reminders, &past_event, &config);
         }
     }
 }
@@ -91,17 +98,31 @@ pub fn main() {
 fn spawn_async_reminder_fetch(
     reminders: Arc<Mutex<Vec<Reminder>>>,
     past_event: Arc<Mutex<PastEvent>>,
+    config: Arc<Mutex<Config>>,
 ) {
     thread::spawn(move || loop {
-        fetch_data(&reminders, &past_event);
+        fetch_data(&reminders, &past_event, &config);
         thread::sleep(Duration::from_secs(5));
     });
 }
 
-fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent>>) {
+fn fetch_data(
+    reminders: &Mutex<Vec<Reminder>>,
+    past_event: &Arc<Mutex<PastEvent>>,
+    config: &Arc<Mutex<Config>>,
+) {
+    let config: Config = if let Ok(config) = config.lock() {
+        config.clone()
+    } else {
+        return;
+    };
     let request_client = reqwest::blocking::Client::new();
     let mut new_reminders: Vec<Reminder> = vec![];
-    if let Ok(response) = reqwest::blocking::get(format!("http://{DOMAIN}:{PORT}/reminders")) {
+    if let Ok(response) = reqwest::blocking::get(format!(
+        "http://{}:{}/reminders",
+        config.network().remote_ip(),
+        config.network().port()
+    )) {
         if let Ok(data) = response.json() {
             new_reminders = data;
         }
@@ -111,7 +132,9 @@ fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent
             alert_user(reminder);
             let _ = request_client
                 .put(format!(
-                    "http://{DOMAIN}:{PORT}/reminders/{}/confirm",
+                    "http://{}:{}/reminders/{}/confirm",
+                    config.network().remote_ip(),
+                    config.network().port(),
                     reminder.id()
                 ))
                 .send();
@@ -128,7 +151,11 @@ fn fetch_data(reminders: &Mutex<Vec<Reminder>>, past_event: &Arc<Mutex<PastEvent
         *reminders = new_reminders;
     }
 
-    let Ok(response) = reqwest::blocking::get(format!("http://{DOMAIN}:{PORT}/past_event")) else {
+    let Ok(response) = reqwest::blocking::get(format!(
+        "http://{}:{}/past_event",
+        config.network().remote_ip(),
+        config.network().port()
+    )) else {
         return;
     };
     let Ok(new_past_event) = response.json() else {

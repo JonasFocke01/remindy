@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [ "client","reminder", "server"]
+members = [ "client","reminder", "server", "config"]
 
 [workspace.lints.clippy]
 pedantic = "warn"

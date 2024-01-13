@@ -1,4 +1,5 @@
 use std::fs::write;
+use std::str::FromStr;
 use std::thread;
 use std::{
     fs::File,
@@ -16,6 +17,7 @@ use axum::{
     routing::{delete, get, patch, post, put},
     Router,
 };
+use config::Config;
 
 mod api;
 use crate::api::{
@@ -24,12 +26,13 @@ use crate::api::{
     push_reminder_duration, rename_reminder, reset_reminder_flags, restart_reminder,
     retime_reminder, snooze_reminder, toggle_reminder_repeat,
 };
-use reminder::{past_event::PastEvent, reminder::Reminder, root_path, PORT, REMINDER_DB_FILE};
+use reminder::{past_event::PastEvent, reminder::Reminder, root_path, REMINDER_DB_FILE};
 
 #[tokio::main]
 async fn main() {
     println!("starting...");
     println!("version: {}", env!("CARGO_PKG_VERSION"));
+    let config = Config::new();
     let reminders: Arc<Mutex<Vec<Reminder>>> = if let Some(reminders) =
         Reminder::from_file(format!("{}/{REMINDER_DB_FILE}", root_path()).as_str())
     {
@@ -108,12 +111,12 @@ async fn main() {
 
     #[allow(clippy::panic)]
     let Ok(listener) = tokio::net::TcpListener::bind(&SocketAddr::new(
-        IpAddr::V4(Ipv4Addr::new(192, 168, 2, 95)),
-        PORT,
+        IpAddr::V4(config.network().local_ip_as_ipv4()),
+        config.network().port_as_u16(),
     ))
     .await
     else {
-        panic!("Failed to bind to port {PORT}");
+        panic!("Failed to bind to port {}", config.network().port());
     };
     #[allow(clippy::panic)]
     if axum::serve(listener, app.into_make_service())

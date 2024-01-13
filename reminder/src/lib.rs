@@ -11,8 +11,6 @@ pub const REMINDER_DB_FILE: &str = "reminders.json";
 pub const REMINDER_LIBRARY_FILE: &str = "reminders-library.json";
 pub const AUDIO_FILE: &str = "ring_tone.mp3";
 
-pub const PORT: u16 = 6969;
-
 #[cfg(not(debug_assertions))]
 pub fn root_path() -> String {
     if let Some(home_dir) = home_dir() {

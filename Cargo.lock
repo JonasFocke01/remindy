@@ -327,6 +327,7 @@ name = "client"
 version = "3.0.0"
 dependencies = [
  "colored",
+ "config",
  "crossterm",
  "duration-string",
  "home",
@@ -387,6 +388,17 @@ checksum = "35ed6e9d84f0b51a7f52daf1c7d71dd136fd7a3f41a8462b8cdb8c78d920fad4"
 dependencies = [
  "bytes",
  "memchr",
+]
+
+[[package]]
+name = "config"
+version = "0.1.0"
+dependencies = [
+ "home",
+ "reminder",
+ "serde",
+ "serde_json",
+ "toml",
 ]
 
 [[package]]
@@ -1988,6 +2000,7 @@ version = "0.0.1"
 dependencies = [
  "axum",
  "home",
+ "config",
  "reminder",
  "serde",
  "serde_json",

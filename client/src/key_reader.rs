@@ -3,6 +3,7 @@ use std::{
     process::{Command, Stdio},
 };
 
+use config::Config;
 use crossterm::{
     cursor,
     event::{poll, read, Event, KeyCode, KeyModifiers},
@@ -12,12 +13,7 @@ use crossterm::{
 use duration_string::DurationString;
 use time::{format_description, Date, Duration, OffsetDateTime, PrimitiveDateTime, Time};
 
-use reminder::{
-    reminder::{ApiReminder, Reminder, ReminderType, TimeObject, OFFSET},
-    PORT,
-};
-
-use crate::DOMAIN;
+use reminder::reminder::{ApiReminder, Reminder, ReminderType, TimeObject, OFFSET};
 
 /// This Reads any input detected on the terminal window.
 /// This will block when a known key combination is found and there are follow up decisions to make
@@ -30,6 +26,7 @@ pub fn read_input(
     reminder_amount: usize,
     cursor_position: &mut usize,
     request_client: &reqwest::blocking::Client,
+    config: &Config,
 ) -> bool {
     if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
         #[allow(clippy::single_match, clippy::wildcard_enum_match_arm)]
@@ -122,7 +119,11 @@ pub fn read_input(
                         reminder_type = ReminderType::Duration;
                     }
                     if request_client
-                        .post(format!("http://{DOMAIN}:{PORT}/reminders"))
+                        .post(format!(
+                            "http://{}:{}/reminders",
+                            config.network().remote_ip(),
+                            config.network().port()
+                        ))
                         .json(&ApiReminder {
                             name,
                             description: String::new(),
@@ -139,7 +140,9 @@ pub fn read_input(
                 KeyCode::Char(' ') => {
                     if request_client
                         .put(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/pause",
+                            "http://{}:{}/reminders/{}/pause",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .send()
@@ -151,7 +154,7 @@ pub fn read_input(
                 }
 
                 KeyCode::Char('r') => {
-                    read_re_mode_input(stdout, selected_reminder, request_client);
+                    read_re_mode_input(stdout, selected_reminder, request_client, config);
                     return true;
                 }
                 KeyCode::Char('k') => {
@@ -172,7 +175,9 @@ pub fn read_input(
                     }
                     if request_client
                         .delete(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}",
+                            "http://{}:{}/reminders/{}",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .send()
@@ -185,7 +190,9 @@ pub fn read_input(
                 KeyCode::Char('s') => {
                     if request_client
                         .put(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/snooze",
+                            "http://{}:{}/reminders/{}/snooze",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .send()
@@ -198,7 +205,9 @@ pub fn read_input(
                 KeyCode::Char('e') => {
                     if request_client
                         .put(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/toggle_repeat",
+                            "http://{}:{}/reminders/{}/toggle_repeat",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .send()
@@ -229,7 +238,9 @@ pub fn read_input(
                         .read_to_string(&mut new_description);
                     if request_client
                         .patch(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/description",
+                            "http://{}:{}/reminders/{}/description",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .json(&new_description)
@@ -255,7 +266,9 @@ pub fn read_input(
                     let duration: core::time::Duration = parsed_duration.into();
                     if request_client
                         .patch(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/push_duration",
+                            "http://{}:{}/reminders/{}/push_duration",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .json(&duration)
@@ -281,7 +294,9 @@ pub fn read_input(
                     let duration: core::time::Duration = parsed_duration.into();
                     if request_client
                         .patch(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/cut_duration",
+                            "http://{}:{}/reminders/{}/cut_duration",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .json(&duration)
@@ -294,7 +309,11 @@ pub fn read_input(
                 }
                 KeyCode::Esc => {
                     if request_client
-                        .put(format!("http://{DOMAIN}:{PORT}/reminders/reset_flags"))
+                        .put(format!(
+                            "http://{}:{}/reminders/reset_flags",
+                            config.network().remote_ip(),
+                            config.network().port()
+                        ))
                         .send()
                         .is_ok()
                     {
@@ -315,6 +334,7 @@ fn read_re_mode_input(
     stdout: &mut Stdout,
     selected_reminder: &Reminder,
     request_client: &reqwest::blocking::Client,
+    config: &Config,
 ) {
     if let Ok(Event::Key(event)) = read() {
         #[allow(clippy::wildcard_enum_match_arm)]
@@ -322,7 +342,9 @@ fn read_re_mode_input(
             KeyCode::Char('s') => {
                 let _ = request_client
                     .put(format!(
-                        "http://{DOMAIN}:{PORT}/reminders/{}/restart",
+                        "http://{}:{}/reminders/{}/restart",
+                        config.network().remote_ip(),
+                        config.network().port(),
                         selected_reminder.id()
                     ))
                     .send();
@@ -336,7 +358,9 @@ fn read_re_mode_input(
                 name = name.replace('\n', "");
                 let _ = request_client
                     .patch(format!(
-                        "http://{DOMAIN}:{PORT}/reminders/{}/rename",
+                        "http://{}:{}/reminders/{}/rename",
+                        config.network().remote_ip(),
+                        config.network().port(),
                         selected_reminder.id()
                     ))
                     .json(&name)
@@ -367,7 +391,9 @@ fn read_re_mode_input(
                     #[allow(clippy::arithmetic_side_effects)]
                     let _ = request_client
                         .patch(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/retime",
+                            "http://{}:{}/reminders/{}/retime",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .json(&TimeObject {
@@ -395,7 +421,9 @@ fn read_re_mode_input(
                     #[allow(clippy::arithmetic_side_effects)]
                     let _ = request_client
                         .patch(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/retime",
+                            "http://{}:{}/reminders/{}/retime",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .json(&TimeObject {
@@ -415,7 +443,9 @@ fn read_re_mode_input(
                     #[allow(clippy::arithmetic_side_effects)]
                     let _ = request_client
                         .patch(format!(
-                            "http://{DOMAIN}:{PORT}/reminders/{}/retime",
+                            "http://{}:{}/reminders/{}/retime",
+                            config.network().remote_ip(),
+                            config.network().port(),
                             selected_reminder.id()
                         ))
                         .json(&TimeObject {
