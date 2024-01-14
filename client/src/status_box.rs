@@ -9,7 +9,6 @@ pub fn build_status_box(last_event: &PastEvent) -> String {
     result.push_str(format!("           | {:<36}|\n\r", "'rn' -> rename").as_str());
     result.push_str(format!("           | {:<36}|\n\r", "'rt' -> retime").as_str());
     result.push_str(format!("           | {:<36}|\n\r", "'s' -> snooze").as_str());
-    result.push_str(format!("           | {:<36}|\n\r", "'l' -> show the library").as_str());
     result.push_str(
         format!(
             "           | {:<36}|\n\r",
