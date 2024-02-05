@@ -18,6 +18,7 @@ use axum::{
     Router,
 };
 use config::Config;
+use tower_http::cors::{Any, CorsLayer};
 
 mod api;
 use crate::api::{
@@ -80,6 +81,8 @@ async fn main() {
         std::thread::sleep(std::time::Duration::from_secs(1));
     });
 
+    let corslayer = CorsLayer::new().allow_methods(Any).allow_origin(Any);
+
     let app = Router::new()
         .route("/reminders", post(add_reminder))
         .route("/reminders/reset_flags", put(reset_reminder_flags))
@@ -107,6 +110,7 @@ async fn main() {
         ))
         .route("/past_event", get(get_past_event))
         .route("/reminders", get(all_reminder))
+        .layer(corslayer)
         .with_state((reminders, past_event));
 
     #[allow(clippy::panic)]

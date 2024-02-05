@@ -7,8 +7,8 @@ description = "The server for remindy"
 license = "MIT"
 
 [dependencies]
-axum = { version = "0.7.3", features = ['multipart'] }
-tower-http = { version = "0.4.3", features = ['cors'] }
+axum = { version = "0.7.4", features = ['multipart'] }
+tower-http = { version = "0.5.1", features = ['cors'] }
 tokio = { version = "1.29.1", features = ["full"] }
 serde = { version = "1.0.182", features = ["derive"] }
 serde_json = "1.0.104"
@@ -16,6 +16,7 @@ time = { version = "0.3.28", features = ["serde", "local-offset", "parsing", "fo
 home = "0.5.5"
 reminder = { path = "../reminder" }
 config = { path = "../config" }
+axum-util = "0.2.2"
 
 [lints]
 workspace = true
