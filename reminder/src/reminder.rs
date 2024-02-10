@@ -258,7 +258,6 @@ impl Reminder {
         None
     }
 }
-// TODO: This should live in the client
 impl Display for Reminder {
     #[allow(clippy::arithmetic_side_effects, clippy::too_many_lines)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
