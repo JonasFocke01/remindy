@@ -15,14 +15,18 @@ time = { version = "0.3.28", features = ["serde", "local-offset", "parsing", "fo
 duration-string = "0.3.0"
 crossterm = "0.27.0"
 colored = "2.0.4"
-msgbox = "0.7.0"
 rodio = "0.17.1"
 reminder = { path = "../reminder" }
 reqwest = { version = "0.11.23", features = ["blocking", "json"] }
 config = { path = "../config" }
 
+[target.'cfg(not(target_arch = "arm"))'.dependencies]
+msgbox = "0.7.0"
+
 [features]
 i3 = []
+msg_box = []
+music = []
 
 [lints]
 workspace = true

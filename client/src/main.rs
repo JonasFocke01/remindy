@@ -168,7 +168,7 @@ fn fetch_data(
 
 fn alert_user(reminder: &Reminder) {
     if let Ok((_stream, audio_stream_handle)) = OutputStream::try_default() {
-        #[cfg(target_os = "linux")]
+        #[cfg(feature = "music")]
         {
             let Ok(file) = File::open(format!("{}/{AUDIO_FILE}", root_path())) else {
                 return;
@@ -183,6 +183,7 @@ fn alert_user(reminder: &Reminder) {
             sink.append(audio_source);
             sink.set_volume(0.7);
 
+            #[cfg(feature = "msg_box")]
             let _trash_bin = msgbox::create(reminder.name(), "", msgbox::IconType::Info);
         }
 
