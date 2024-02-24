@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [ "client","reminder", "server", "config", "wasm_client"]
+members = [ "client","reminder", "server", "config"]
 
 [workspace.lints.rust]
 non_snake_case = "allow"
