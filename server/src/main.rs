@@ -8,7 +8,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use api::{add_reminder, all_reminder};
+use api::{add_reminder, all_reminder, all_reminder_formatted};
 use axum::{
     extract::State,
     http::{Request, StatusCode},
@@ -110,6 +110,7 @@ async fn main() {
         ))
         .route("/past_event", get(get_past_event))
         .route("/reminders", get(all_reminder))
+        .route("/reminders/formatted", get(all_reminder_formatted))
         .layer(corslayer)
         .with_state((reminders, past_event));
 

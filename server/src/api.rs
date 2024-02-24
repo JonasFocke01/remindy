@@ -30,6 +30,46 @@ pub async fn all_reminder(State((reminders, _)): ApiState) -> (StatusCode, Json<
     }
 }
 
+pub async fn all_reminder_formatted(State((reminders, _)): ApiState) -> (StatusCode, Json<String>) {
+    let mut result = String::new();
+    if let Ok(reminders) = reminders.lock() {
+        for reminder in reminders.iter() {
+            let time_left = reminder.remaining_duration();
+            let Ok(time_format) = time::format_description::parse("[hour]:[minute]:[second]")
+            else {
+                return (StatusCode::INTERNAL_SERVER_ERROR, Json(String::new()));
+            };
+            result.push_str(
+                format!(
+                    "\r{}n\r{}",
+                    reminder,
+                    if let Some(time_left) = time_left {
+                        if time_left.whole_days() > 0 {
+                            let Ok(finish_time) = reminder.finish_time().format(&time_format)
+                            else {
+                                return (StatusCode::INTERNAL_SERVER_ERROR, Json(String::new()));
+                            };
+                            format!(
+                                "                        {}\n\r{}",
+                                finish_time,
+                                reminder.description().replace('\n', "\n\r")
+                            )
+                        } else {
+                            reminder.description().replace('\n', "\n\r")
+                        }
+                    } else {
+                        reminder.description().replace('\n', "\n\r")
+                    }
+                )
+                .as_str(),
+            );
+        }
+        (StatusCode::OK, Json(result))
+    } else {
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(String::new()))
+    }
+}
+
 pub async fn add_reminder(
     State((reminders, past_event)): ApiState,
     api_reminder: Result<Json<ApiReminder>, JsonRejection>,
