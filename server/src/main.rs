@@ -83,7 +83,6 @@ async fn main() {
                             ])
                             .stdout(Stdio::null())
                             .spawn();
-                        reminder.sended_sms_just_now();
                     }
                     reminder.request_confirmation(&mut past_event);
                     if reminder.repeating() {
