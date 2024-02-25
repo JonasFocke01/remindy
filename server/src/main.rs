@@ -1,4 +1,5 @@
 use std::fs::write;
+use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::thread;
 use std::{
@@ -29,7 +30,9 @@ use crate::api::{
 };
 use reminder::{past_event::PastEvent, reminder::Reminder, root_path, REMINDER_DB_FILE};
 
+// TODO: get rid of `too_many_lines`
 #[tokio::main]
+#[allow(clippy::too_many_lines)]
 async fn main() {
     println!("starting...");
     println!("version: {}", env!("CARGO_PKG_VERSION"));
@@ -62,6 +65,26 @@ async fn main() {
         for reminder in reminders.iter_mut() {
             if reminder.remaining_duration().is_none() {
                 if let Ok(mut past_event) = past_event_clone.lock() {
+                    if !reminder.needs_confirmation() && !reminder.repeating() {
+                        // TODO: make this configurable
+                        let _ = Command::new("curl")
+                            .args([
+                                "https://api.twilio.com/2010-04-01/Accounts/ACc4a89978184cd77f60c13a8515013754/Messages.json",
+                                "-X",
+                                "POST",
+                                "--data-urlencode",
+                                "To=whatsapp:+491733113571",
+                                "--data-urlencode",
+                                "From=whatsapp:+14155238886",
+                                "--data-urlencode",
+                                format!("Body=Reminder due:\n{}\n{}", reminder.name(), reminder.description()).as_str(),
+                                "-u",
+                                "ACc4a89978184cd77f60c13a8515013754:4411046064ba9ef33911da7b225def5f"
+                            ])
+                            .stdout(Stdio::null())
+                            .spawn();
+                        reminder.sended_sms_just_now();
+                    }
                     reminder.request_confirmation(&mut past_event);
                     if reminder.repeating() {
                         reminder.restart();
