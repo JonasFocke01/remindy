@@ -1,4 +1,4 @@
-#[cfg(feature = "i3")]
+#[cfg(any(feature = "i3", target_os = "macos"))]
 use std::process::{Command, Stdio};
 use std::{
     cmp::Ordering,
