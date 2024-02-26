@@ -299,7 +299,7 @@ impl Display for Reminder {
             progressbar.push('>');
             write!(
                 f,
-                "{:>10}{} {} {}{:<21}{}{} {}",
+                "{:>10}{} {} {}{:<21}{} {} {}",
                 if self.repeating() {
                     self.name.clone().green().clear()
                 } else {
@@ -342,16 +342,16 @@ impl Display for Reminder {
                 } else {
                     progressbar.bright_red()
                 },
-                if self.send_e_message() {
-                    "U+2708".blue()
-                } else {
-                    " ".blue()
-                },
                 "]".bright_green(),
                 if time_left.whole_days() > 0 {
                     finish_date.bright_red()
                 } else {
                     format!(" {finish_time} ").bright_red()
+                },
+                if self.send_e_message() {
+                    "ޔ".blue()
+                } else {
+                    " ".blue()
                 },
             )
         } else {
