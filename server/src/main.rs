@@ -65,7 +65,7 @@ async fn main() {
         for reminder in reminders.iter_mut() {
             if reminder.remaining_duration().is_none() {
                 if let Ok(mut past_event) = past_event_clone.lock() {
-                    if !reminder.needs_confirmation() && !reminder.repeating() {
+                    if !reminder.needs_confirmation() && !reminder.repeating() && !reminder.already_confirmed() {
                         // TODO: make this configurable
                         let _ = Command::new("curl")
                             .args([

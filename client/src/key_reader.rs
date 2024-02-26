@@ -217,6 +217,21 @@ pub fn read_input(
                     }
                     return false;
                 }
+                KeyCode::Char('s') => {
+                    if request_client
+                        .put(format!(
+                            "http://{}:{}/reminders/{}/toggle_send_e_message",
+                            config.network().remote_ip(),
+                            config.network().port(),
+                            selected_reminder.id()
+                        ))
+                        .send()
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
+                }
                 KeyCode::Enter => {
                     let Ok(process) = Command::new("vipe")
                         .stdin(Stdio::piped())

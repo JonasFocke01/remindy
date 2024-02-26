@@ -45,6 +45,7 @@ pub struct Reminder {
     restart_flag: bool,
     paused: bool,
     repeating: bool,
+    send_e_message: bool,
 }
 
 impl Reminder {
@@ -71,6 +72,7 @@ impl Reminder {
             restart_flag: false,
             paused: false,
             repeating: false,
+            send_e_message: true,
         }
     }
     #[must_use]
@@ -91,6 +93,7 @@ impl Reminder {
             reminder_type: value.reminder_type,
             paused: false,
             repeating: false,
+            send_e_message: true,
         }
     }
     #[must_use]
@@ -113,6 +116,16 @@ impl Reminder {
     }
     pub fn set_reminder_type(&mut self, reminder_type: ReminderType) {
         self.reminder_type = reminder_type;
+    }
+    pub fn send_e_message(&self) -> bool {
+        self.send_e_message
+    }
+    pub fn toggle_send_e_message(&mut self) {
+        if self.send_e_message {
+            self.send_e_message = false;
+        } else {
+            self.send_e_message = true;
+        }
     }
     #[must_use]
     #[allow(clippy::arithmetic_side_effects)]
@@ -152,6 +165,9 @@ impl Reminder {
     pub fn set_whole_duration(&mut self, whole_duration: Duration) {
         self.whole_duration = whole_duration;
         self.already_confirmed = false;
+    }
+    pub fn already_confirmed(&self) -> bool {
+        self.already_confirmed
     }
     #[must_use]
     pub fn finish_time(&self) -> OffsetDateTime {
@@ -283,7 +299,7 @@ impl Display for Reminder {
             progressbar.push('>');
             write!(
                 f,
-                "{:>10}{} {} {}{:<21}{} {}",
+                "{:>10}{} {} {}{:<21}{}{} {}",
                 if self.repeating() {
                     self.name.clone().green().clear()
                 } else {
@@ -325,6 +341,11 @@ impl Display for Reminder {
                     progressbar.blue()
                 } else {
                     progressbar.bright_red()
+                },
+                if self.send_e_message() {
+                    "U+2708".blue()
+                } else {
+                    " ".blue()
                 },
                 "]".bright_green(),
                 if time_left.whole_days() > 0 {
@@ -373,6 +394,7 @@ impl Default for Reminder {
             restart_flag: false,
             paused: false,
             repeating: false,
+            send_e_message: true,
         }
     }
 }
