@@ -70,6 +70,7 @@ async fn main() {
                         && !reminder.already_confirmed()
                     {
                         // TODO: make this configurable
+                        // TODO: repair, because no whatsapp is send..
                         let _ = Command::new("curl")
                             .args([
                                 "https://api.twilio.com/2010-04-01/Accounts/ACc4a89978184cd77f60c13a8515013754/Messages.json",
