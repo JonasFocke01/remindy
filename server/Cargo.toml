@@ -16,6 +16,7 @@ time = { version = "0.3.28", features = ["serde", "local-offset", "parsing", "fo
 reminder = { path = "../reminder" }
 config = { path = "../config" }
 axum-util = "0.2.2"
+json_store_rs = { git = "https://github.com/JonasFocke01/json_store_rs.git" }
 
 [lints]
 workspace = true

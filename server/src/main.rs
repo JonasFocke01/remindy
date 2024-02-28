@@ -1,4 +1,5 @@
-use std::fs::write;
+use std::ops::DerefMut;
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::thread;
 use std::{
@@ -18,6 +19,8 @@ use axum::{
     Router,
 };
 use config::Config;
+use json_store_rs::JsonStore;
+use serde::{Deserialize, Serialize};
 use tower_http::cors::{Any, CorsLayer};
 
 mod api;
@@ -29,6 +32,32 @@ use crate::api::{
 };
 use reminder::{past_event::PastEvent, reminder::Reminder, root_path, REMINDER_DB_FILE};
 
+#[derive(Serialize, Deserialize, Clone, Default)]
+struct Reminders {
+    reminders: Vec<Reminder>,
+}
+
+impl JsonStore for Reminders {
+    fn db_file_path() -> PathBuf {
+        let mut root_path = PathBuf::from(root_path());
+        root_path.push(REMINDER_DB_FILE);
+        root_path
+    }
+}
+
+impl std::ops::Deref for Reminders {
+    type Target = Vec<Reminder>;
+    fn deref(&self) -> &Self::Target {
+        &self.reminders
+    }
+}
+
+impl DerefMut for Reminders {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.reminders
+    }
+}
+
 // TODO: get rid of `too_many_lines`
 #[tokio::main]
 #[allow(clippy::too_many_lines)]
@@ -36,8 +65,9 @@ async fn main() {
     println!("starting...");
     println!("version: {}", env!("CARGO_PKG_VERSION"));
     let config = Config::new();
-    let reminders: Arc<Mutex<Vec<Reminder>>> = if let Some(reminders) =
-        Reminder::from_file(format!("{}/{REMINDER_DB_FILE}", root_path()).as_str())
+    let reminders: Arc<Mutex<Reminders>> = if let Ok(reminders) =
+        // Reminder::from_file(format!("{}/{REMINDER_DB_FILE}", root_path()).as_str())
+        Reminders::load()
     {
         Arc::new(Mutex::new(reminders))
     } else {
@@ -49,7 +79,7 @@ async fn main() {
                 let _trash_bin = file.write_all(b"[]");
             }
         }
-        Arc::new(Mutex::new(vec![]))
+        Arc::new(Mutex::new(Reminders { reminders: vec![] }))
     };
 
     let past_event = Arc::new(Mutex::new(PastEvent::None));
@@ -100,7 +130,7 @@ async fn main() {
             writable = true;
         }
         if writable {
-            write_reminder_db(&reminders);
+            write_reminder_db(&mut reminders);
         }
         drop(reminders);
         std::thread::sleep(std::time::Duration::from_secs(1));
@@ -158,8 +188,8 @@ async fn main() {
 }
 
 #[allow(clippy::missing_errors_doc)]
-pub async fn write_reminder_db_middleware(
-    State(reminders): State<Arc<Mutex<Vec<Reminder>>>>,
+async fn write_reminder_db_middleware(
+    State(reminders): State<Arc<Mutex<Reminders>>>,
     req: Request<axum::body::Body>,
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
@@ -168,18 +198,12 @@ pub async fn write_reminder_db_middleware(
         for reminder in reminders.iter_mut() {
             reminder.push_back_end_time_if_paused(time::Duration::seconds(1));
         }
-        write_reminder_db(&reminders);
+        write_reminder_db(&mut reminders);
     }
     Ok(result)
 }
 
-pub fn write_reminder_db(reminders: &Vec<Reminder>) {
-    let Ok(serialized_reminders) = serde_json::to_string_pretty(&reminders) else {
-        return;
-    };
-    let _trash_bin = write(
-        format!("{}/{REMINDER_DB_FILE}", root_path()).as_str(),
-        serialized_reminders,
-    );
+fn write_reminder_db(reminders: &mut Reminders) {
+    let _ = reminders.write();
     print!(" w");
 }

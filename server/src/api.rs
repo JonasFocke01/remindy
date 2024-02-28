@@ -1,3 +1,4 @@
+use crate::Reminders;
 use axum::{
     extract::{rejection::JsonRejection, Path, State},
     http::StatusCode,
@@ -10,7 +11,7 @@ use reminder::{
 };
 use std::sync::{Arc, Mutex};
 
-type ApiState = State<(Arc<Mutex<Vec<Reminder>>>, Arc<Mutex<PastEvent>>)>;
+type ApiState = State<(Arc<Mutex<Reminders>>, Arc<Mutex<PastEvent>>)>;
 
 pub async fn get_past_event(State((_, past_event)): ApiState) -> (StatusCode, Json<PastEvent>) {
     if let Ok(past_event) = past_event.lock() {
@@ -22,7 +23,7 @@ pub async fn get_past_event(State((_, past_event)): ApiState) -> (StatusCode, Js
 
 pub async fn all_reminder(State((reminders, _)): ApiState) -> (StatusCode, Json<Vec<Reminder>>) {
     if let Ok(reminders) = reminders.lock() {
-        (StatusCode::OK, Json(reminders.clone()))
+        (StatusCode::OK, Json(reminders.reminders.clone()))
     } else {
         (StatusCode::INTERNAL_SERVER_ERROR, Json(vec![]))
     }
