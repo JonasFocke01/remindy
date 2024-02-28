@@ -2,8 +2,7 @@
 use std::process::{Command, Stdio};
 use std::{
     cmp::Ordering,
-    fs::File,
-    io::{BufReader, Write},
+    io::Write,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
@@ -75,7 +74,7 @@ pub fn main() {
                         reminders.len(),
                         &mut cursor_position,
                         &request_client,
-                        &(*config),
+                        &config,
                     );
                 } else {
                     should_fetch_data = read_input(
@@ -84,7 +83,7 @@ pub fn main() {
                         reminders.len(),
                         &mut cursor_position,
                         &request_client,
-                        &(*config),
+                        &config,
                     );
                 }
             };

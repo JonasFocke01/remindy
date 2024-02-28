@@ -117,15 +117,12 @@ impl Reminder {
     pub fn set_reminder_type(&mut self, reminder_type: ReminderType) {
         self.reminder_type = reminder_type;
     }
+    #[must_use]
     pub fn send_e_message(&self) -> bool {
         self.send_e_message
     }
     pub fn toggle_send_e_message(&mut self) {
-        if self.send_e_message {
-            self.send_e_message = false;
-        } else {
-            self.send_e_message = true;
-        }
+        self.send_e_message = !self.send_e_message;
     }
     #[must_use]
     #[allow(clippy::arithmetic_side_effects)]
@@ -166,6 +163,7 @@ impl Reminder {
         self.whole_duration = whole_duration;
         self.already_confirmed = false;
     }
+    #[must_use]
     pub fn already_confirmed(&self) -> bool {
         self.already_confirmed
     }

@@ -1,16 +1,14 @@
-use std::sync::{Arc, Mutex};
-
 use axum::{
     extract::{rejection::JsonRejection, Path, State},
     http::StatusCode,
     Json,
 };
-
 use reminder::{
     get_reminder_by_id,
     past_event::PastEvent,
     reminder::{ApiReminder, Reminder, TimeObject},
 };
+use std::sync::{Arc, Mutex};
 
 type ApiState = State<(Arc<Mutex<Vec<Reminder>>>, Arc<Mutex<PastEvent>>)>;
 
