@@ -1,11 +1,10 @@
 use std::fs::write;
 use std::process::{Command, Stdio};
-use std::str::FromStr;
 use std::thread;
 use std::{
     fs::File,
     io::Write,
-    net::{IpAddr, Ipv4Addr, SocketAddr},
+    net::{IpAddr, SocketAddr},
     sync::{Arc, Mutex},
 };
 
