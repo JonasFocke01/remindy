@@ -534,7 +534,6 @@ dependencies = [
 name = "config"
 version = "0.1.0"
 dependencies = [
- "home",
  "reminder",
  "serde",
  "toml",
@@ -1179,15 +1178,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "home"
-version = "0.5.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5"
-dependencies = [
- "windows-sys 0.52.0",
-]
-
-[[package]]
 name = "hound"
 version = "3.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1471,7 +1461,7 @@ dependencies = [
 [[package]]
 name = "json_store_rs"
 version = "0.1.0"
-source = "git+https://github.com/JonasFocke01/json_store_rs.git#1a1e6ed78230617e1c60cb546a37f5dbc23eff9a"
+source = "git+https://github.com/JonasFocke01/json_store_rs.git#3122377010ae3714335a5bd96fc70997c2f25777"
 dependencies = [
  "anyhow",
  "serde",
@@ -2202,7 +2192,7 @@ name = "reminder"
 version = "3.0.0"
 dependencies = [
  "colored",
- "home",
+ "json_store_rs",
  "serde",
  "serde_json",
  "time",

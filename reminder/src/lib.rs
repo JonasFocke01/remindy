@@ -1,7 +1,7 @@
 #[cfg(not(debug_assertions))]
-use home::home_dir;
-
+use json_store_rs::home_dir;
 use reminder::Reminder;
+use std::path::PathBuf;
 
 pub mod past_event;
 pub mod reminder;
@@ -12,19 +12,20 @@ pub const REMINDER_LIBRARY_FILE: &str = "reminders-library.json";
 pub const AUDIO_FILE: &str = "ring_tone.mp3";
 
 #[cfg(not(debug_assertions))]
-pub fn root_path() -> String {
-    if let Some(home_dir) = home_dir() {
-        if let Some(home_dir) = home_dir.as_os_str().to_str() {
-            return format!("{home_dir}/{ROOT_PATH}");
-        }
+pub fn root_path() -> Result<PathBuf, ()> {
+    if let Ok(mut home_dir) = home_dir() {
+        home_dir.push(ROOT_PATH);
+        return Ok(home_dir);
     }
-    String::new()
+
+    Err(())
 }
 
 #[cfg(debug_assertions)]
 #[must_use]
-pub fn root_path() -> String {
-    "dbg_db".to_string()
+pub fn root_path() -> Result<PathBuf, ()> {
+    Ok(PathBuf::from("dbg_db"))
+    // "dbg_db".to_string()
 }
 
 #[must_use]

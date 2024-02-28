@@ -39,7 +39,7 @@ struct Reminders {
 
 impl JsonStore for Reminders {
     fn db_file_path() -> PathBuf {
-        let mut root_path = PathBuf::from(root_path());
+        let mut root_path = root_path().unwrap_or_default();
         root_path.push(REMINDER_DB_FILE);
         root_path
     }
@@ -58,24 +58,22 @@ impl DerefMut for Reminders {
     }
 }
 
-// TODO: get rid of `too_many_lines`
 #[tokio::main]
 #[allow(clippy::too_many_lines)]
 async fn main() {
     println!("starting...");
     println!("version: {}", env!("CARGO_PKG_VERSION"));
     let config = Config::new();
-    let reminders: Arc<Mutex<Reminders>> = if let Ok(reminders) =
-        // Reminder::from_file(format!("{}/{REMINDER_DB_FILE}", root_path()).as_str())
-        Reminders::load()
-    {
+    let reminders: Arc<Mutex<Reminders>> = if let Ok(reminders) = Reminders::load() {
         Arc::new(Mutex::new(reminders))
     } else {
         // TODO: do something about not deleting existing reminders
-        if std::fs::create_dir_all(root_path()).is_ok() {
-            if let Ok(mut file) =
-                File::create(format!("{}/{REMINDER_DB_FILE}", root_path()).as_str())
-            {
+        if std::fs::create_dir_all(root_path().unwrap_or_default()).is_ok() {
+            if let Ok(mut file) = File::create(
+                format!("{:?}/{REMINDER_DB_FILE}", root_path().unwrap_or_default())
+                    .as_str()
+                    .replace('\"', ""),
+            ) {
                 let _trash_bin = file.write_all(b"[]");
             }
         }

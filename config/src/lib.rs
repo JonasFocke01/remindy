@@ -13,16 +13,24 @@ pub struct Config {
 
 impl Config {
     pub fn new() -> Self {
-        let raw_config = fs::read_to_string(format!("{}/{CONFIG_FILE_NAME}", root_path()).as_str())
-            .expect(format!("Config not found in {}/{CONFIG_FILE_NAME}", root_path()).as_str());
-        let result = toml::from_str(&raw_config).expect(
-            format!(
-                "Config file in {}/{CONFIG_FILE_NAME} is invalid",
-                root_path()
+        if let Ok(root_path) = root_path() {
+            let raw_config = fs::read_to_string(
+                format!("{:?}/{CONFIG_FILE_NAME}", root_path)
+                    .replace("\"", "")
+                    .as_str(),
             )
-            .as_str(),
-        );
-        return result;
+            .expect(format!("Config not found in {:?}/{CONFIG_FILE_NAME}", root_path).as_str());
+            let result = toml::from_str(&raw_config).expect(
+                format!(
+                    "Config file in {:?}/{CONFIG_FILE_NAME} is invalid",
+                    root_path
+                )
+                .as_str(),
+            );
+            return result;
+        } else {
+            panic!("home_dir not found")
+        }
     }
     pub fn network(&self) -> &Network {
         &self.network
