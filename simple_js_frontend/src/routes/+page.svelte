@@ -2,11 +2,25 @@
 	import { onMount } from 'svelte';
 	import { getDayOfYear } from 'date-fns';
 
-	let reminders: String[] = [];
+	interface Reminder {
+		stringifyed: string;
+		month: number;
+	}
+
+	let reminders: Reminder[] = [];
 
 	onMount(async () => {
 		const response = await fetch('http://jonrrrs.duckdns.org:6969/reminders/formatted');
-		reminders = await response.json();
+		let response_reminders = await response.json();
+		reminders = response_reminders.map((reminder: string) => {
+			const regex = /(\d{2}).(\d{2}).(\d{4})/; // Regular expression to match the month part
+			const match = regex.exec(reminder);
+			const month = parseInt(match?.[0].substring(3, 5) ?? '');
+			return {
+				stringifyed: reminder,
+				month: month
+			};
+		});
 	});
 
 	let newName = '';
@@ -72,9 +86,12 @@
 
 <h3 class="font-bold my-10">Current reminder list:</h3>
 {#each reminders as reminder}
-	<p>
-		{reminder}
-	</p>
+	<div
+		class={'border rounded-lg mt-2 p-2 '}
+		style:background-color={reminder.month % 2 ? '#1ca51a90' : '#c9460e90'}
+	>
+		{reminder.stringifyed}
+	</div>
 {/each}
 
 <form on:submit|preventDefault={handleNewReminder}>
