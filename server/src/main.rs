@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::ops::DerefMut;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
@@ -88,6 +89,13 @@ async fn main() {
         let Ok(mut reminders) = reminders_clone.lock() else {
             continue;
         };
+        reminders.sort_by(|a, b| {
+            if a.finish_time().cmp(&b.finish_time()) == Ordering::Less {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            }
+        });
         let mut writable = false;
         for reminder in reminders.iter_mut() {
             if reminder.remaining_duration().is_none() {
