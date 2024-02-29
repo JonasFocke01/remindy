@@ -142,7 +142,10 @@ async fn main() {
         std::thread::sleep(std::time::Duration::from_secs(1));
     });
 
-    let corslayer = CorsLayer::new().allow_methods(Any).allow_origin(Any);
+    let corslayer = CorsLayer::new()
+        .allow_methods(Any)
+        .allow_origin(Any)
+        .allow_headers(Any);
 
     let app = Router::new()
         .route("/reminders", post(add_reminder))

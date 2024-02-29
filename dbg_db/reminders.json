@@ -1,268 +1,316 @@
-[
-  {
-    "id": 1,
-    "name": "meem",
-    "description": "",
-    "start_time": [
-      2024,
-      6,
-      11,
-      44,
-      27,
-      323062447,
-      1,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "whole_duration": [
-      9,
-      998892515
-    ],
-    "finish_time": [
-      2024,
-      6,
-      11,
-      44,
-      37,
-      321954962,
-      1,
-      0,
-      0
-    ],
-    "needs_confirmation": false,
-    "already_confirmed": true,
-    "delete_flag": false,
-    "restart_flag": false,
-    "paused": false,
-    "repeating": false
-  },
-  {
-    "id": 2,
-    "name": "kaak",
-    "description": "",
-    "start_time": [
-      2024,
-      6,
-      11,
-      44,
-      48,
-      26893393,
-      1,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "whole_duration": [
-      9,
-      999018434
-    ],
-    "finish_time": [
-      2024,
-      6,
-      11,
-      44,
-      58,
-      25911827,
-      1,
-      0,
-      0
-    ],
-    "needs_confirmation": false,
-    "already_confirmed": true,
-    "delete_flag": false,
-    "restart_flag": false,
-    "paused": false,
-    "repeating": false
-  },
-  {
-    "id": 3,
-    "name": "r",
-    "description": "",
-    "start_time": [
-      2024,
-      6,
-      11,
-      46,
-      34,
-      407852479,
-      1,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "whole_duration": [
-      9,
-      999105104
-    ],
-    "finish_time": [
-      2024,
-      6,
-      11,
-      46,
-      44,
-      406957583,
-      1,
-      0,
-      0
-    ],
-    "needs_confirmation": false,
-    "already_confirmed": true,
-    "delete_flag": false,
-    "restart_flag": false,
-    "paused": false,
-    "repeating": false
-  },
-  {
-    "id": 4,
-    "name": "kaak",
-    "description": "",
-    "start_time": [
-      2024,
-      6,
-      11,
-      48,
-      33,
-      705201019,
-      1,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "whole_duration": [
-      4,
-      998790175
-    ],
-    "finish_time": [
-      2024,
-      6,
-      11,
-      48,
-      38,
-      703991194,
-      1,
-      0,
-      0
-    ],
-    "needs_confirmation": false,
-    "already_confirmed": true,
-    "delete_flag": false,
-    "restart_flag": false,
-    "paused": false,
-    "repeating": false
-  },
-  {
-    "id": 5,
-    "name": "meem",
-    "description": "",
-    "start_time": [
-      2024,
-      6,
-      11,
-      49,
-      5,
-      254578361,
-      1,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "whole_duration": [
-      5,
-      999044954
-    ],
-    "finish_time": [
-      2024,
-      6,
-      11,
-      49,
-      11,
-      253623315,
-      1,
-      0,
-      0
-    ],
-    "needs_confirmation": false,
-    "already_confirmed": true,
-    "delete_flag": false,
-    "restart_flag": false,
-    "paused": false,
-    "repeating": false
-  },
-  {
-    "id": 6,
-    "name": "miim",
-    "description": "",
-    "start_time": [
-      2024,
-      6,
-      11,
-      59,
-      55,
-      605610169,
-      1,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "whole_duration": [
-      9,
-      999094592
-    ],
-    "finish_time": [
-      2024,
-      6,
-      12,
-      0,
-      5,
-      604704761,
-      1,
-      0,
-      0
-    ],
-    "needs_confirmation": false,
-    "already_confirmed": true,
-    "delete_flag": false,
-    "restart_flag": false,
-    "paused": false,
-    "repeating": false
-  },
-  {
-    "id": 7,
-    "name": "moom",
-    "description": "",
-    "start_time": [
-      2024,
-      6,
-      12,
-      0,
-      43,
-      46009927,
-      1,
-      0,
-      0
-    ],
-    "reminder_type": "Duration",
-    "whole_duration": [
-      9,
-      999070252
-    ],
-    "finish_time": [
-      2024,
-      6,
-      12,
-      0,
-      53,
-      45080179,
-      1,
-      0,
-      0
-    ],
-    "needs_confirmation": false,
-    "already_confirmed": true,
-    "delete_flag": false,
-    "restart_flag": false,
-    "paused": false,
-    "repeating": false
-  }
-]
+{
+  "reminders": [
+    {
+      "id": 5,
+      "name": "meem",
+      "description": "",
+      "start_time": [
+        2024,
+        59,
+        15,
+        9,
+        13,
+        805595822,
+        1,
+        0,
+        0
+      ],
+      "reminder_type": "Duration",
+      "whole_duration": [
+        31556925,
+        998937186
+      ],
+      "finish_time": [
+        2025,
+        58,
+        20,
+        57,
+        59,
+        804533008,
+        1,
+        0,
+        0
+      ],
+      "needs_confirmation": false,
+      "already_confirmed": false,
+      "delete_flag": false,
+      "restart_flag": false,
+      "paused": false,
+      "repeating": true,
+      "send_e_message": true
+    },
+    {
+      "id": 13,
+      "name": "loch Ness",
+      "description": "",
+      "start_time": [
+        2024,
+        60,
+        18,
+        45,
+        51,
+        931092327,
+        1,
+        0,
+        0
+      ],
+      "reminder_type": "Duration",
+      "whole_duration": [
+        86399,
+        68907673
+      ],
+      "finish_time": [
+        2024,
+        61,
+        18,
+        45,
+        51,
+        0,
+        1,
+        0,
+        0
+      ],
+      "needs_confirmation": false,
+      "already_confirmed": false,
+      "delete_flag": false,
+      "restart_flag": false,
+      "paused": false,
+      "repeating": false,
+      "send_e_message": true
+    },
+    {
+      "id": 12,
+      "name": "loch 3",
+      "description": "",
+      "start_time": [
+        2024,
+        60,
+        18,
+        45,
+        44,
+        704558835,
+        1,
+        0,
+        0
+      ],
+      "reminder_type": "Duration",
+      "whole_duration": [
+        86399,
+        295441165
+      ],
+      "finish_time": [
+        2024,
+        61,
+        18,
+        45,
+        44,
+        0,
+        1,
+        0,
+        0
+      ],
+      "needs_confirmation": false,
+      "already_confirmed": false,
+      "delete_flag": false,
+      "restart_flag": false,
+      "paused": false,
+      "repeating": false,
+      "send_e_message": true
+    },
+    {
+      "id": 11,
+      "name": "loch 2",
+      "description": "",
+      "start_time": [
+        2024,
+        60,
+        18,
+        45,
+        37,
+        498122321,
+        1,
+        0,
+        0
+      ],
+      "reminder_type": "Duration",
+      "whole_duration": [
+        86399,
+        501877679
+      ],
+      "finish_time": [
+        2024,
+        61,
+        18,
+        45,
+        37,
+        0,
+        1,
+        0,
+        0
+      ],
+      "needs_confirmation": false,
+      "already_confirmed": false,
+      "delete_flag": false,
+      "restart_flag": false,
+      "paused": false,
+      "repeating": false,
+      "send_e_message": true
+    },
+    {
+      "id": 10,
+      "name": "loch 1",
+      "description": "",
+      "start_time": [
+        2024,
+        60,
+        18,
+        45,
+        31,
+        320299354,
+        1,
+        0,
+        0
+      ],
+      "reminder_type": "Duration",
+      "whole_duration": [
+        86399,
+        679700646
+      ],
+      "finish_time": [
+        2024,
+        61,
+        18,
+        45,
+        31,
+        0,
+        1,
+        0,
+        0
+      ],
+      "needs_confirmation": false,
+      "already_confirmed": false,
+      "delete_flag": false,
+      "restart_flag": false,
+      "paused": false,
+      "repeating": false,
+      "send_e_message": true
+    },
+    {
+      "id": 9,
+      "name": "test",
+      "description": "",
+      "start_time": [
+        2024,
+        60,
+        15,
+        38,
+        3,
+        608896520,
+        1,
+        0,
+        0
+      ],
+      "reminder_type": "Duration",
+      "whole_duration": [
+        9,
+        998825459
+      ],
+      "finish_time": [
+        2024,
+        60,
+        15,
+        38,
+        13,
+        607721979,
+        1,
+        0,
+        0
+      ],
+      "needs_confirmation": false,
+      "already_confirmed": true,
+      "delete_flag": false,
+      "restart_flag": false,
+      "paused": false,
+      "repeating": false,
+      "send_e_message": true
+    },
+    {
+      "id": 8,
+      "name": "kaak",
+      "description": "",
+      "start_time": [
+        2024,
+        60,
+        15,
+        23,
+        22,
+        325200264,
+        1,
+        0,
+        0
+      ],
+      "reminder_type": "Duration",
+      "whole_duration": [
+        9,
+        998889168
+      ],
+      "finish_time": [
+        2024,
+        60,
+        15,
+        23,
+        32,
+        324089432,
+        1,
+        0,
+        0
+      ],
+      "needs_confirmation": false,
+      "already_confirmed": true,
+      "delete_flag": false,
+      "restart_flag": false,
+      "paused": false,
+      "repeating": false,
+      "send_e_message": true
+    },
+    {
+      "id": 7,
+      "name": "miim",
+      "description": "",
+      "start_time": [
+        2024,
+        59,
+        15,
+        9,
+        44,
+        321228549,
+        1,
+        0,
+        0
+      ],
+      "reminder_type": "Duration",
+      "whole_duration": [
+        3599,
+        999079856
+      ],
+      "finish_time": [
+        2024,
+        60,
+        2,
+        9,
+        44,
+        320308405,
+        1,
+        0,
+        0
+      ],
+      "needs_confirmation": false,
+      "already_confirmed": true,
+      "delete_flag": false,
+      "restart_flag": false,
+      "paused": false,
+      "repeating": false,
+      "send_e_message": true
+    }
+  ]
+}
