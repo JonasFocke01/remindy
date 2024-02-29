@@ -1,3 +1,7 @@
+#[cfg(feature = "music")]
+use std::fs::File;
+#[cfg(feature = "music")]
+use std::io::BufReader;
 #[cfg(any(feature = "i3", target_os = "macos"))]
 use std::process::{Command, Stdio};
 use std::{
@@ -13,10 +17,14 @@ use crossterm::{
     cursor, execute,
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use reminder::{past_event::PastEvent, reminder::Reminder, root_path, AUDIO_FILE};
+use reminder::{past_event::PastEvent, reminder::Reminder};
+#[cfg(feature = "music")]
+use reminder::{root_path, AUDIO_FILE};
 
 mod status_box;
-use rodio::{Decoder, OutputStream, Sink};
+use rodio::OutputStream;
+#[cfg(feature = "music")]
+use rodio::{Decoder, Sink};
 use status_box::build_status_box;
 
 mod reminders;
@@ -166,10 +174,17 @@ fn fetch_data(
 }
 
 fn alert_user(reminder: &Reminder) {
+    #[cfg(not(any(feature = "music", feature = "i3", feature = "msg_box")))]
+    let _ = reminder;
     if let Ok((_stream, audio_stream_handle)) = OutputStream::try_default() {
+        #[cfg(not(any(feature = "music", feature = "i3", feature = "msg_box")))]
+        let _ = audio_stream_handle;
         #[cfg(feature = "music")]
         {
-            let Ok(file) = File::open(format!("{}/{AUDIO_FILE}", root_path())) else {
+            let Ok(file) = File::open(format!(
+                "{}/{AUDIO_FILE}",
+                format!("{:?}", root_path().unwrap()).replace('"', "")
+            )) else {
                 return;
             };
             let audio_buf = BufReader::new(file);
@@ -194,7 +209,7 @@ fn alert_user(reminder: &Reminder) {
             .stdout(Stdio::null())
             .spawn();
 
-        #[cfg(target_os = "macos")]
+        #[cfg(all(target_os = "macos", feature = "msg_box"))]
         let _ = Command::new("osascript")
             .arg("-e")
             .arg(format!(
