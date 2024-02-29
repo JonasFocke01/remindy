@@ -29,43 +29,41 @@ pub async fn all_reminder(State((reminders, _)): ApiState) -> (StatusCode, Json<
     }
 }
 
-pub async fn all_reminder_formatted(State((reminders, _)): ApiState) -> (StatusCode, Json<String>) {
-    let mut result = String::new();
+pub async fn all_reminder_formatted(
+    State((reminders, _)): ApiState,
+) -> (StatusCode, Json<Vec<String>>) {
+    let mut result: Vec<String> = vec![];
     if let Ok(reminders) = reminders.lock() {
         for reminder in reminders.iter() {
             let time_left = reminder.remaining_duration();
             let Ok(time_format) = time::format_description::parse("[hour]:[minute]:[second]")
             else {
-                return (StatusCode::INTERNAL_SERVER_ERROR, Json(String::new()));
+                return (StatusCode::INTERNAL_SERVER_ERROR, Json(vec![]));
             };
-            result.push_str(
-                format!(
-                    "\r{}n\r{}",
-                    reminder,
-                    if let Some(time_left) = time_left {
-                        if time_left.whole_days() > 0 {
-                            let Ok(finish_time) = reminder.finish_time().format(&time_format)
-                            else {
-                                return (StatusCode::INTERNAL_SERVER_ERROR, Json(String::new()));
-                            };
-                            format!(
-                                "                        {}\n\r{}",
-                                finish_time,
-                                reminder.description().replace('\n', "\n\r")
-                            )
-                        } else {
-                            reminder.description().replace('\n', "\n\r")
-                        }
+            result.push(format!(
+                "\r{}n\r{}",
+                reminder,
+                if let Some(time_left) = time_left {
+                    if time_left.whole_days() > 0 {
+                        let Ok(finish_time) = reminder.finish_time().format(&time_format) else {
+                            return (StatusCode::INTERNAL_SERVER_ERROR, Json(vec![]));
+                        };
+                        format!(
+                            "                        {}\n\r{}",
+                            finish_time,
+                            reminder.description()
+                        )
                     } else {
                         reminder.description().replace('\n', "\n\r")
                     }
-                )
-                .as_str(),
-            );
+                } else {
+                    reminder.description().replace('\n', "\n\r")
+                }
+            ));
         }
         (StatusCode::OK, Json(result))
     } else {
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(String::new()))
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(vec![]))
     }
 }
 

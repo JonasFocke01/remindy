@@ -15,5 +15,8 @@ time = { version = "0.3.31", features = ["serde", "local-offset", "parsing", "fo
 colored = "2.0.4"
 json_store_rs = { git = "https://github.com/JonasFocke01/json_store_rs.git" }
 
+[features]
+colored = []
+
 [lints]
 workspace = true

@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+#[cfg(feature = "colored")]
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use time::{format_description, Duration, OffsetDateTime, UtcOffset};
@@ -272,6 +273,82 @@ impl Reminder {
         None
     }
 }
+#[cfg(not(feature = "colored"))]
+impl Display for Reminder {
+    #[allow(clippy::arithmetic_side_effects, clippy::too_many_lines)]
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let time_left = self.finish_time - now;
+        let Ok(time_format) = format_description::parse("[hour]:[minute]:[second]") else {
+            return Err(std::fmt::Error);
+        };
+        let Ok(finish_time) = self.finish_time.format(&time_format) else {
+            return Err(std::fmt::Error);
+        };
+        let Ok(date_format) = format_description::parse("[day].[month].[year]") else {
+            return Err(std::fmt::Error);
+        };
+        let Ok(finish_date) = self.finish_time.format(&date_format) else {
+            return Err(std::fmt::Error);
+        };
+        if time_left.is_positive() {
+            let mut progressbar = String::new();
+            for _ in 0..(self.remaining_percent() / 5) {
+                progressbar.push('=');
+            }
+            progressbar.push('>');
+            write!(
+                f,
+                "{}{} {} {}",
+                self.name.clone(),
+                if self.restart_flag() {
+                    "↻"
+                } else if self.delete_flag() {
+                    "✗"
+                } else if self.repeating() {
+                    "∞"
+                } else {
+                    " "
+                },
+                if time_left.whole_days() > 0 {
+                    format!("{:>3}{}", time_left.whole_days().to_string(), " days",)
+                } else {
+                    format!(
+                        "{:0>2}{}{:0>2}{}{:0>2}",
+                        (time_left.whole_hours() - time_left.whole_days() * 24).to_string(),
+                        ":",
+                        (time_left.whole_minutes() - time_left.whole_hours() * 60).to_string(),
+                        ":",
+                        (time_left.whole_seconds() - time_left.whole_minutes() * 60).to_string()
+                    )
+                },
+                if time_left.whole_days() > 0 {
+                    finish_date
+                } else {
+                    format!(" {finish_time} ")
+                },
+            )
+        } else {
+            write!(
+                f,
+                "{}{} {} {}  ",
+                self.name.clone(),
+                if self.repeating() {
+                    "∞"
+                } else if self.delete_flag() {
+                    "✗"
+                } else if self.restart_flag() {
+                    "↻"
+                } else {
+                    " "
+                },
+                finish_date,
+                finish_time,
+            )
+        }
+    }
+}
+#[cfg(feature = "colored")]
 impl Display for Reminder {
     #[allow(clippy::arithmetic_side_effects, clippy::too_many_lines)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

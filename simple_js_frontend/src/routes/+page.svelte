@@ -4,8 +4,8 @@
 	let reminders = [];
 
 	onMount(async () => {
-		// const response = await fetch('http://jonrrrs.duckdns.org:6969/reminers');
-		const response = await fetch('//188.136.69.200:6969/reminders');
+		// const response = await fetch('http://jonrrrs.duckdns.org:6969/reminders/formatted');
+		const response = await fetch('//127.0.0.1:6969/reminders/formatted');
 		reminders = await response.json();
 	});
 </script>
@@ -15,6 +15,6 @@
 
 {#each reminders as reminder}
 	<p>
-		{reminder.name}
+		{reminder.replaceAll(' ޔn ')}
 	</p>
 {/each}
