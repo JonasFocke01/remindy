@@ -214,4 +214,5 @@ async fn write_reminder_db_middleware(
 fn write_reminder_db(reminders: &mut Reminders) {
     let _ = reminders.write();
     print!(" w");
+    let _ = std::io::stdout().flush();
 }
