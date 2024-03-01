@@ -28,6 +28,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-node": "^4.0.1",
 		"date-fns": "^3.3.1"
 	}
 }
