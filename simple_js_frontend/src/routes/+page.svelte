@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { DateInput } from 'date-picker-svelte';
 	import { getDayOfYear } from 'date-fns';
 
 	interface Reminder {
@@ -10,6 +11,11 @@
 	let reminders: Reminder[] = [];
 
 	onMount(async () => {
+		fetch_reminders();
+		setInterval(() => fetch_reminders(), 10000);
+	});
+
+	async function fetch_reminders() {
 		const response = await fetch('http://jonrrrs.duckdns.org:6969/reminders/formatted');
 		// const response = await fetch('http://127.0.0.1:6969/reminders/formatted');
 		let response_reminders = await response.json();
@@ -22,10 +28,11 @@
 				month: month
 			};
 		});
-	});
+	}
 
 	let newName = '';
 	let newDescription = '';
+	let newDate = new Date();
 
 	let submit_status: 'Ok' | 'Error' | 'Waiting' | 'Idle' = 'Idle';
 
@@ -41,7 +48,7 @@
 			body: JSON.stringify({
 				name: newName,
 				description: newDescription,
-				finish_time: currentDateAsSerializedOffsetDateTime(),
+				finish_time: dateAsSerializedOffsetDateTime(newDate),
 				reminder_type: 'Duration'
 			})
 		})
@@ -57,16 +64,17 @@
 			});
 	}
 
-	function currentDateAsSerializedOffsetDateTime(): number[] {
-		let date = new Date();
+	function dateAsSerializedOffsetDateTime(date: Date): number[] {
 		let result: number[] = [];
+
+		console.log(date.getTimezoneOffset());
 
 		// year
 		result.push(date.getUTCFullYear());
 		// day of year
-		result.push(getDayOfYear(date) + 1);
+		result.push(getDayOfYear(date));
 		// hours
-		result.push(date.getUTCHours() + 1);
+		result.push(date.getUTCHours());
 		// minutes
 		result.push(date.getUTCMinutes());
 		// seconds
@@ -106,7 +114,7 @@
 			class="border w-1/3 text-black"
 			on:change={() => (submit_status = 'Idle')}
 		/>
-		<label for="newDescription">Description (With time and date!)</label>
+		<label for="newDescription">Description (With time!)</label>
 		<input
 			type="text"
 			bind:value={newDescription}
@@ -114,6 +122,7 @@
 			class="border w-1/3 text-black"
 		/>
 	</div>
+	<DateInput bind:value={newDate} format="dd.MM.yyyy" />
 	<button class="border w-1/3 mt-4 bg-gray-500">SUBMIT</button>
 </form>
 
