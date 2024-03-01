@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { DateInput } from 'date-picker-svelte';
+	import { TimePicker } from 'svelte-time-picker';
 	import { getDayOfYear } from 'date-fns';
 
 	interface Reminder {
@@ -47,9 +48,9 @@
 			redirect: 'follow',
 			body: JSON.stringify({
 				name: newName,
-				description: newDescription,
+				description: `                          ${newDescription}\n                       FIXME!!!\n                        Actual date: ${newDate.toLocaleDateString('de-De')}\n                        Actual time: ${newDate.toLocaleTimeString('de-De')}\n`,
 				finish_time: dateAsSerializedOffsetDateTime(newDate),
-				reminder_type: 'Duration'
+				reminder_type: 'Time'
 			})
 		})
 			.then((response) => {
@@ -66,8 +67,6 @@
 
 	function dateAsSerializedOffsetDateTime(date: Date): number[] {
 		let result: number[] = [];
-
-		console.log(date.getTimezoneOffset());
 
 		// year
 		result.push(date.getUTCFullYear());
@@ -122,7 +121,16 @@
 			class="border w-1/3 text-black"
 		/>
 	</div>
-	<DateInput bind:value={newDate} format="dd.MM.yyyy" />
+	<div class="flex">
+		<DateInput bind:value={newDate} format="dd.MM.yyyy" />
+		<TimePicker
+			date={newDate}
+			options={{
+				bgColor: '#374151',
+				is24h: true
+			}}
+		/>
+	</div>
 	<button class="border w-1/3 mt-4 bg-gray-500">SUBMIT</button>
 </form>
 
