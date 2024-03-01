@@ -133,7 +133,9 @@ async fn main() {
         }
         for reminder in reminders.iter_mut() {
             reminder.push_back_end_time_if_paused(time::Duration::SECOND);
-            writable = true;
+            if reminder.paused() {
+                writable = true;
+            }
         }
         if writable {
             write_reminder_db(&mut reminders);
@@ -204,9 +206,6 @@ async fn write_reminder_db_middleware(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let result = next.run(req).await;
     if let Ok(mut reminders) = reminders.lock() {
-        for reminder in reminders.iter_mut() {
-            reminder.push_back_end_time_if_paused(time::Duration::seconds(1));
-        }
         write_reminder_db(&mut reminders);
     }
     Ok(result)

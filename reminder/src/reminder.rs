@@ -203,6 +203,10 @@ impl Reminder {
     pub fn restart_flag(&self) -> bool {
         self.restart_flag
     }
+    #[must_use]
+    pub fn paused(&self) -> bool {
+        self.paused
+    }
     pub fn set_restart_flag(&mut self, flag: bool) {
         self.restart_flag = flag;
     }
