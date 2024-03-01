@@ -11,6 +11,7 @@
 
 	onMount(async () => {
 		const response = await fetch('http://jonrrrs.duckdns.org:6969/reminders/formatted');
+		// const response = await fetch('http://127.0.0.1:6969/reminders/formatted');
 		let response_reminders = await response.json();
 		reminders = response_reminders.map((reminder: string) => {
 			const regex = /(\d{2}).(\d{2}).(\d{4})/; // Regular expression to match the month part
@@ -30,7 +31,8 @@
 
 	async function handleNewReminder() {
 		submit_status = 'Waiting';
-		let result = fetch('http://jonrrrs.duckdns.org:6969/reminders/', {
+		// fetch('http://127.0.0.1:6969/reminders', {
+		let result = fetch('http://jonrrrs.duckdns.org:6969/reminders', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
