@@ -30,7 +30,7 @@
 
 	async function handleNewReminder() {
 		submit_status = 'Waiting';
-		fetch('http://jonrrrs.duckdns.org:6969/reminders/', {
+		let result = fetch('http://jonrrrs.duckdns.org:6969/reminders/', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -42,16 +42,29 @@
 				finish_time: currentDateAsSerializedOffsetDateTime(),
 				reminder_type: 'Duration'
 			})
-		})
+		});
+		if (Notification.permission !== 'granted') {
+			Notification.requestPermission();
+		}
+		result
 			.then((response) => {
 				if (response.status === 200) {
 					submit_status = 'Ok';
+					if (Notification.permission === 'granted') {
+						new Notification('Reminder' + newName + 'created');
+					}
 				} else {
 					submit_status = 'Error';
+					if (Notification.permission === 'granted') {
+						new Notification('Reminder' + newName + 'coult NOT be created created');
+					}
 				}
 			})
 			.catch((_error) => {
 				submit_status = 'Error';
+				if (Notification.permission === 'granted') {
+					new Notification('Reminder' + newName + 'coult NOT be created created');
+				}
 			});
 	}
 
