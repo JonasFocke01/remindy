@@ -28,6 +28,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-netlify": "^4.1.0",
 		"@sveltejs/adapter-node": "^4.0.1",
 		"date-fns": "^3.3.1"
 	}
