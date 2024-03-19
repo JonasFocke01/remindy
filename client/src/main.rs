@@ -196,10 +196,10 @@ fn alert_user(reminder: &Reminder) {
             };
             sink.append(audio_source);
             sink.set_volume(0.7);
-
-            #[cfg(feature = "msg_box")]
-            let _trash_bin = msgbox::create(reminder.name(), "", msgbox::IconType::Info);
         }
+
+        #[cfg(feature = "msg_box")]
+        let _trash_bin = msgbox::create(reminder.name(), "", msgbox::IconType::Info);
 
         #[cfg(feature = "i3")]
         let _ = Command::new("i3-msg")
