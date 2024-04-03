@@ -57,7 +57,6 @@ pub fn main() {
         if let Ok(reminders) = reminders.lock() {
             let reminder_list = build_reminder_list(&reminders, cursor_position);
             let reminder_list = reminder_list.as_bytes();
-            let _trash_bin = disable_raw_mode().is_ok();
             let _trash_bin = enable_raw_mode().is_ok();
             execute!(
                 stdout,
