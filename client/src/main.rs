@@ -46,32 +46,30 @@ pub fn main() {
         Arc::clone(&config),
     );
     loop {
-        let _trash_bin = disable_raw_mode().is_ok();
-
-        let _trash_bin = enable_raw_mode().is_ok();
-        execute!(
-            stdout,
-            cursor::Hide,
-            terminal::Clear(terminal::ClearType::All),
-            cursor::MoveTo(0, 0)
-        )
-        .unwrap();
-
-        if let Ok(past_event) = past_event.lock() {
-            if stdout
-                .write_all(build_status_box(&past_event).as_bytes())
-                .is_err()
-            {
-                return;
-            }
+        let Ok(locked_past_event) = past_event.lock() else {
+            return;
         };
+        let status_box = build_status_box(locked_past_event.clone());
+        let status_box = status_box.as_bytes();
+        drop(locked_past_event);
 
         let mut should_fetch_data = false;
         if let Ok(reminders) = reminders.lock() {
-            if stdout
-                .write_all(build_reminder_list(&reminders, cursor_position).as_bytes())
-                .is_err()
-            {
+            let reminder_list = build_reminder_list(&reminders, cursor_position);
+            let reminder_list = reminder_list.as_bytes();
+            let _trash_bin = disable_raw_mode().is_ok();
+            let _trash_bin = enable_raw_mode().is_ok();
+            execute!(
+                stdout,
+                cursor::Hide,
+                terminal::Clear(terminal::ClearType::All),
+                cursor::MoveTo(0, 0)
+            )
+            .unwrap();
+            if stdout.write_all(status_box).is_err() {
+                return;
+            }
+            if stdout.write_all(reminder_list).is_err() {
                 return;
             }
             if let Ok(config) = config.lock() {
