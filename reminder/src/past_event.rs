@@ -4,7 +4,7 @@ use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
-use crate::reminder::{Reminder, OFFSET};
+use crate::reminder::{my_local_offset, Reminder};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum PastEvent {
@@ -25,7 +25,7 @@ impl Display for PastEvent {
         match self {
             #[allow(clippy::arithmetic_side_effects)]
             PastEvent::ReminderEnded(reminder) => {
-                let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+                let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
                 let finished_ago = now - reminder.finish_time();
                 write!(
                     f,

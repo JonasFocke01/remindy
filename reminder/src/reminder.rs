@@ -1,4 +1,8 @@
-use std::fmt::Display;
+use std::{
+    error::Error,
+    fmt::Display,
+    process::{Command, Stdio},
+};
 
 #[cfg(feature = "colored")]
 use colored::Colorize;
@@ -23,12 +27,35 @@ pub enum ReminderType {
     // TODO: Note
 }
 
-// TODO: Account for summer/ winter time
-pub const OFFSET: UtcOffset = if let Ok(offset) = UtcOffset::from_hms(1, 0, 0) {
-    offset
-} else {
-    panic!("Cant compute UtcOffset")
-};
+#[must_use]
+pub fn my_local_offset() -> UtcOffset {
+    let Ok(system_offset_command_output) = Command::new("date").arg("+'%:z'").output() else {
+        println!("Error: Could not compute local offset");
+        return UtcOffset::UTC;
+    };
+    let system_offset = system_offset_command_output.stdout;
+    let Some(sliced_system_offset) = system_offset.get(3) else {
+        println!("Error: Could not compute local offset");
+        return UtcOffset::UTC;
+    };
+    let sliced_system_offset = &[*sliced_system_offset];
+    let Ok(system_offset_hours) = std::str::from_utf8(sliced_system_offset) else {
+        println!("Error: Could not compute local offset");
+        return UtcOffset::UTC;
+    };
+    let Ok(system_offset_hours) = system_offset_hours.parse() else {
+        println!("Error: Could not compute local offset");
+        return UtcOffset::UTC;
+    };
+    match UtcOffset::from_hms(system_offset_hours, 0, 0) {
+        Ok(offset) => offset,
+        Err(e) => {
+            println!("Error: Could not compute local offset");
+            println!("{:?}", e.source());
+            UtcOffset::UTC
+        }
+    }
+}
 
 #[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -58,7 +85,7 @@ impl Reminder {
         duration: Duration,
         finish_time: OffsetDateTime,
     ) -> Self {
-        let start_time = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let start_time = OffsetDateTime::now_utc().to_offset(my_local_offset());
         Self {
             id,
             name,
@@ -78,7 +105,7 @@ impl Reminder {
     }
     #[must_use]
     pub fn from_api_reminder(id: usize, value: ApiReminder) -> Self {
-        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
         Self {
             id,
             name: value.name,
@@ -128,7 +155,7 @@ impl Reminder {
     #[must_use]
     #[allow(clippy::arithmetic_side_effects)]
     pub fn remaining_duration(&self) -> Option<Duration> {
-        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
         let difference = self.finish_time - now;
         if difference.is_positive() {
             Some(difference)
@@ -146,7 +173,7 @@ impl Reminder {
     pub fn remaining_percent(&self) -> usize {
         let difference = self.finish_time - self.start_time;
         if difference.is_positive() {
-            let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+            let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
             map_range(
                 (
                     self.start_time.unix_timestamp() as f64,
@@ -215,7 +242,7 @@ impl Reminder {
         self.repeating
     }
     pub fn toggle_repeat(&mut self) -> Option<bool> {
-        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
         #[allow(clippy::arithmetic_side_effects)]
         let time_left = self.finish_time - now;
         if time_left.is_positive() {
@@ -234,7 +261,7 @@ impl Reminder {
         self.paused = !self.paused;
     }
     pub fn restart(&mut self) {
-        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
         self.start_time = now;
         #[allow(clippy::arithmetic_side_effects)]
         match self.reminder_type {
@@ -255,7 +282,7 @@ impl Reminder {
         self.already_confirmed = false;
     }
     pub fn snooze(&mut self) {
-        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
         #[allow(clippy::arithmetic_side_effects)]
         if self.finish_time < now {
             self.finish_time += Duration::minutes(5);
@@ -281,7 +308,7 @@ impl Reminder {
 impl Display for Reminder {
     #[allow(clippy::arithmetic_side_effects, clippy::too_many_lines)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
         let time_left = self.finish_time - now;
         let Ok(time_format) = format_description::parse("[hour]:[minute]:[second]") else {
             return Err(std::fmt::Error);
@@ -356,7 +383,7 @@ impl Display for Reminder {
 impl Display for Reminder {
     #[allow(clippy::arithmetic_side_effects, clippy::too_many_lines)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
         let time_left = self.finish_time - now;
         let Ok(time_format) = format_description::parse("[hour]:[minute]:[second]") else {
             return Err(std::fmt::Error);
@@ -458,7 +485,7 @@ impl Display for Reminder {
 }
 impl Default for Reminder {
     fn default() -> Self {
-        let now = OffsetDateTime::now_utc().to_offset(OFFSET);
+        let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
         Self {
             id: 0,
             name: String::new(),

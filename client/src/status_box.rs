@@ -1,4 +1,4 @@
-use reminder::past_event::PastEvent;
+use reminder::{past_event::PastEvent, reminder::my_local_offset};
 
 #[allow(clippy::module_name_repetitions)]
 pub fn build_status_box(last_event: &PastEvent) -> String {
@@ -30,6 +30,13 @@ pub fn build_status_box(last_event: &PastEvent) -> String {
     result.push_str(format!("           | {:<36}|\n\r", "'s' -> toggle 'send external message'").as_str());
     result.push_str(format!("           | {:<36}|\n\r", "'ENTER' -> Edit").as_str());
     result.push_str(format!("           | {:<36}|\n\r", "'CTRL' + 'c' -> exit(0)").as_str());
+    if my_local_offset().is_utc() {
+        for _ in 0..100 {
+            result.push_str(
+                format!("           | {:<36}|\n\r", "Local Offset NOT found!!!").as_str(),
+            );
+        }
+    }
     result.push_str(
         format!(
             "           | Version: {:<27}|\n\r",

@@ -13,7 +13,7 @@ use crossterm::{
 use duration_string::DurationString;
 use time::{format_description, Date, Duration, OffsetDateTime, PrimitiveDateTime, Time};
 
-use reminder::reminder::{ApiReminder, Reminder, ReminderType, TimeObject, OFFSET};
+use reminder::reminder::{my_local_offset, ApiReminder, Reminder, ReminderType, TimeObject};
 
 /// This Reads any input detected on the terminal window.
 /// This will block when a known key combination is found and there are follow up decisions to make
@@ -63,8 +63,8 @@ pub fn read_input(
                         return false;
                     };
                     time_input = time_input.replace('\n', "");
-                    let now = OffsetDateTime::now_utc().to_offset(OFFSET);
-                    let mut finish_time = OffsetDateTime::now_utc().to_offset(OFFSET);
+                    let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
+                    let mut finish_time = OffsetDateTime::now_utc().to_offset(my_local_offset());
                     let reminder_type: ReminderType;
                     #[allow(unused_assignments)]
                     let mut _duration: Duration = Duration::new(0, 0);
@@ -390,8 +390,8 @@ fn read_re_mode_input(
                 let mut time_input = String::new();
                 let _trash_bin = stdin().read_line(&mut time_input);
                 time_input = time_input.replace('\n', "");
-                let now = OffsetDateTime::now_utc().to_offset(OFFSET);
-                let mut finish_time = OffsetDateTime::now_utc().to_offset(OFFSET);
+                let now = OffsetDateTime::now_utc().to_offset(my_local_offset());
+                let mut finish_time = OffsetDateTime::now_utc().to_offset(my_local_offset());
 
                 let _trash_bin = enable_raw_mode().is_ok();
                 #[allow(clippy::useless_conversion)]
