@@ -15,7 +15,7 @@ use std::{
 use config::Config;
 use crossterm::{
     cursor, execute,
-    terminal::{self, disable_raw_mode, enable_raw_mode},
+    terminal::{self, enable_raw_mode},
 };
 use reminder::{past_event::PastEvent, reminder::Reminder};
 #[cfg(feature = "music")]
