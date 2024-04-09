@@ -29,9 +29,11 @@ pub fn build_reminder_list(reminders: &[Reminder], cursor_position: usize) -> St
                         let Ok(finish_time) = reminder.finish_time().format(&time_format) else {
                             return String::new();
                         };
+                        let weekday = reminder.finish_time().weekday();
                         format!(
-                            "                        {}\n\r{}",
+                            "                        {} {}\n\r{}",
                             finish_time,
+                            weekday,
                             reminder.description().replace('\n', "\n\r").cyan()
                         )
                         .cyan()
