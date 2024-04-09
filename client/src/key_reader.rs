@@ -232,6 +232,20 @@ pub fn read_input(
                     }
                     return false;
                 }
+                KeyCode::Char('u') => {
+                    if request_client
+                        .put(format!(
+                            "http://{}:{}/reminders/undo",
+                            config.network().remote_ip(),
+                            config.network().port(),
+                        ))
+                        .send()
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
+                }
                 KeyCode::Enter => {
                     let Ok(process) = Command::new("vipe")
                         .stdin(Stdio::piped())

@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::ops::DerefMut;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::thread;
@@ -27,35 +26,24 @@ use tower_http::cors::{Any, CorsLayer};
 mod api;
 use crate::api::{
     alter_reminder_description, confirm_reminder_finish_event, cut_reminder_duration,
-    delete_reminder, force_restart_reminder, get_past_event, pause_reminder,
+    delete_reminder, force_restart_reminder, get_past_event, pause_reminder, pop_reminder_history,
     push_reminder_duration, rename_reminder, reset_reminder_flags, restart_reminder,
     retime_reminder, snooze_reminder, toggle_reminder_repeat,
 };
 use reminder::{past_event::PastEvent, reminder::Reminder, root_path, REMINDER_DB_FILE};
 
 #[derive(Serialize, Deserialize, Clone, Default)]
-struct Reminders {
+struct DBFile {
     reminders: Vec<Reminder>,
+    history: Vec<Vec<Reminder>>,
+    reset_history_on_change: bool,
 }
 
-impl JsonStore for Reminders {
+impl JsonStore for DBFile {
     fn db_file_path() -> PathBuf {
         let mut root_path = root_path().unwrap_or_default();
         root_path.push(REMINDER_DB_FILE);
         root_path
-    }
-}
-
-impl std::ops::Deref for Reminders {
-    type Target = Vec<Reminder>;
-    fn deref(&self) -> &Self::Target {
-        &self.reminders
-    }
-}
-
-impl DerefMut for Reminders {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.reminders
     }
 }
 
@@ -65,7 +53,7 @@ async fn main() {
     println!("starting...");
     println!("version: {}", env!("CARGO_PKG_VERSION"));
     let config = Config::new();
-    let reminders: Arc<Mutex<Reminders>> = if let Ok(reminders) = Reminders::load() {
+    let db_file: Arc<Mutex<DBFile>> = if let Ok(reminders) = DBFile::load() {
         Arc::new(Mutex::new(reminders))
     } else {
         // TODO: do something about not deleting existing reminders
@@ -78,18 +66,22 @@ async fn main() {
                 let _trash_bin = file.write_all(b"[]");
             }
         }
-        Arc::new(Mutex::new(Reminders { reminders: vec![] }))
+        Arc::new(Mutex::new(DBFile {
+            reminders: vec![],
+            history: vec![],
+            reset_history_on_change: false,
+        }))
     };
 
     let past_event = Arc::new(Mutex::new(PastEvent::None));
 
-    let reminders_clone = Arc::clone(&reminders);
+    let db_file_clone = Arc::clone(&db_file);
     let past_event_clone = Arc::clone(&past_event);
     thread::spawn(move || loop {
-        let Ok(mut reminders) = reminders_clone.lock() else {
+        let Ok(mut db_file) = db_file_clone.lock() else {
             continue;
         };
-        reminders.sort_by(|a, b| {
+        db_file.reminders.sort_by(|a, b| {
             if a.finish_time().cmp(&b.finish_time()) == Ordering::Less {
                 Ordering::Greater
             } else {
@@ -97,7 +89,7 @@ async fn main() {
             }
         });
         let mut writable = false;
-        for reminder in reminders.iter_mut() {
+        for reminder in &mut db_file.reminders {
             if reminder.remaining_duration().is_none() {
                 if let Ok(mut past_event) = past_event_clone.lock() {
                     if !reminder.needs_confirmation()
@@ -131,16 +123,16 @@ async fn main() {
                 }
             }
         }
-        for reminder in reminders.iter_mut() {
+        for reminder in &mut db_file.reminders {
             reminder.push_back_end_time_if_paused(time::Duration::SECOND);
             if reminder.paused() {
                 writable = true;
             }
         }
         if writable {
-            write_reminder_db(&mut reminders);
+            write_reminder_db(&mut db_file);
         }
-        drop(reminders);
+        drop(db_file);
         std::thread::sleep(std::time::Duration::from_secs(1));
     });
 
@@ -171,14 +163,19 @@ async fn main() {
         )
         .route("/reminders/:id/confirm", put(confirm_reminder_finish_event))
         .layer(axum::middleware::from_fn_with_state(
-            Arc::clone(&reminders),
+            Arc::clone(&db_file),
+            populate_reminder_history,
+        ))
+        .route("/reminders/undo", put(pop_reminder_history))
+        .layer(axum::middleware::from_fn_with_state(
+            Arc::clone(&db_file),
             write_reminder_db_middleware,
         ))
         .route("/past_event", get(get_past_event))
         .route("/reminders", get(all_reminder))
         .route("/reminders/formatted", get(all_reminder_formatted))
         .layer(corslayer)
-        .with_state((reminders, past_event));
+        .with_state((db_file, past_event));
 
     #[allow(clippy::panic)]
     let Ok(listener) = tokio::net::TcpListener::bind(&SocketAddr::new(
@@ -199,8 +196,26 @@ async fn main() {
 }
 
 #[allow(clippy::missing_errors_doc)]
+async fn populate_reminder_history(
+    State(db_file): State<Arc<Mutex<DBFile>>>,
+    req: Request<axum::body::Body>,
+    next: Next,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    if let Ok(mut db_file) = db_file.lock() {
+        if db_file.reset_history_on_change {
+            db_file.history = vec![];
+            db_file.reset_history_on_change = false;
+        }
+        let reminders = db_file.reminders.clone();
+        db_file.history.push(reminders);
+    };
+    let result = next.run(req).await;
+    Ok(result)
+}
+
+#[allow(clippy::missing_errors_doc)]
 async fn write_reminder_db_middleware(
-    State(reminders): State<Arc<Mutex<Reminders>>>,
+    State(reminders): State<Arc<Mutex<DBFile>>>,
     req: Request<axum::body::Body>,
     next: Next,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
@@ -211,7 +226,7 @@ async fn write_reminder_db_middleware(
     Ok(result)
 }
 
-fn write_reminder_db(reminders: &mut Reminders) {
+fn write_reminder_db(reminders: &mut DBFile) {
     let _ = reminders.write();
     print!(" w");
     let _ = std::io::stdout().flush();

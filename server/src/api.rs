@@ -1,4 +1,4 @@
-use crate::Reminders;
+use crate::DBFile;
 use axum::{
     extract::{rejection::JsonRejection, Path, State},
     http::StatusCode,
@@ -11,7 +11,8 @@ use reminder::{
 };
 use std::sync::{Arc, Mutex};
 
-type ApiState = State<(Arc<Mutex<Reminders>>, Arc<Mutex<PastEvent>>)>;
+// TODO: move `PastEvent` into DBFile
+type ApiState = State<(Arc<Mutex<DBFile>>, Arc<Mutex<PastEvent>>)>;
 
 pub async fn get_past_event(State((_, past_event)): ApiState) -> (StatusCode, Json<PastEvent>) {
     if let Ok(past_event) = past_event.lock() {
@@ -30,11 +31,11 @@ pub async fn all_reminder(State((reminders, _)): ApiState) -> (StatusCode, Json<
 }
 
 pub async fn all_reminder_formatted(
-    State((reminders, _)): ApiState,
+    State((db_file, _)): ApiState,
 ) -> (StatusCode, Json<Vec<String>>) {
     let mut result: Vec<String> = vec![];
-    if let Ok(reminders) = reminders.lock() {
-        for reminder in reminders.iter() {
+    if let Ok(db_file) = db_file.lock() {
+        for reminder in &db_file.reminders {
             let time_left = reminder.remaining_duration();
             let Ok(time_format) = time::format_description::parse("[hour]:[minute]:[second]")
             else {
@@ -68,11 +69,11 @@ pub async fn all_reminder_formatted(
 }
 
 pub async fn add_reminder(
-    State((reminders, past_event)): ApiState,
+    State((db_file, past_event)): ApiState,
     api_reminder: Result<Json<ApiReminder>, JsonRejection>,
 ) -> StatusCode {
     // TODO: create fancy middleware, that does this boilerplate stuff
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(mut past_event) = past_event.lock() else {
@@ -81,28 +82,33 @@ pub async fn add_reminder(
     let Ok(Json(api_reminder)) = api_reminder else {
         return StatusCode::UNPROCESSABLE_ENTITY;
     };
-    let max_id = reminders.iter().map(Reminder::id).max().unwrap_or_default();
+    let max_id = db_file
+        .reminders
+        .iter()
+        .map(Reminder::id)
+        .max()
+        .unwrap_or_default();
 
     let new_id = max_id.saturating_add(1);
 
     let new_reminder = Reminder::from_api_reminder(new_id, api_reminder);
-    reminders.push(new_reminder.clone());
+    db_file.reminders.push(new_reminder.clone());
     *past_event = PastEvent::ReminderCreated(new_reminder.clone());
     print!("\nn ({}) ", new_reminder.name());
     StatusCode::OK
 }
 
 pub async fn restart_reminder(
-    State((reminders, past_event)): ApiState,
+    State((db_file, past_event)): ApiState,
     Path(id): Path<usize>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(mut past_event) = past_event.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         if reminder.restart_flag() {
             *past_event = PastEvent::ReminderEdited(reminder.clone());
             reminder.restart();
@@ -117,13 +123,13 @@ pub async fn restart_reminder(
 }
 
 pub async fn force_restart_reminder(
-    State((reminders, _)): ApiState,
+    State((db_file, _)): ApiState,
     Path(id): Path<usize>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         reminder.restart();
         print!("\nfrs ({}) ", reminder.name());
         StatusCode::OK
@@ -133,11 +139,11 @@ pub async fn force_restart_reminder(
 }
 
 pub async fn rename_reminder(
-    State((reminders, past_event)): ApiState,
+    State((db_file, past_event)): ApiState,
     Path(id): Path<usize>,
     name: Result<Json<String>, JsonRejection>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(mut past_event) = past_event.lock() else {
@@ -146,7 +152,7 @@ pub async fn rename_reminder(
     let Ok(Json(name)) = name else {
         return StatusCode::UNPROCESSABLE_ENTITY;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         reminder.set_name(name.clone());
         *past_event = PastEvent::ReminderEdited(reminder.clone());
         print!("\nrn ({name}) ");
@@ -156,11 +162,11 @@ pub async fn rename_reminder(
     }
 }
 
-pub async fn reset_reminder_flags(State((reminders, _)): ApiState) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+pub async fn reset_reminder_flags(State((db_file, _)): ApiState) -> StatusCode {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
-    for reminder in reminders.iter_mut() {
+    for reminder in &mut db_file.reminders {
         reminder.set_restart_flag(false);
         reminder.set_delete_flag(false);
     }
@@ -169,16 +175,16 @@ pub async fn reset_reminder_flags(State((reminders, _)): ApiState) -> StatusCode
 }
 
 pub async fn snooze_reminder(
-    State((reminders, past_event)): ApiState,
+    State((db_file, past_event)): ApiState,
     Path(id): Path<usize>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(mut past_event) = past_event.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         reminder.snooze();
         *past_event = PastEvent::ReminderSnooze(reminder.clone());
         print!("\ns ({}) ", reminder.name());
@@ -189,17 +195,17 @@ pub async fn snooze_reminder(
 }
 
 pub async fn delete_reminder(
-    State((reminders, past_event)): ApiState,
+    State((db_file, past_event)): ApiState,
     Path(id): Path<usize>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(mut past_event) = past_event.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
-    let reminders_clone = reminders.clone();
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    let reminders_clone = db_file.reminders.clone();
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         print!("\nd ({}) ", reminder.name());
         if reminder.delete_flag() {
             *past_event = PastEvent::ReminderDeleted(reminder.clone());
@@ -209,7 +215,7 @@ pub async fn delete_reminder(
             else {
                 return StatusCode::NOT_FOUND;
             };
-            reminders.remove(index);
+            db_file.reminders.remove(index);
         } else {
             reminder.set_delete_flag(true);
         }
@@ -220,11 +226,11 @@ pub async fn delete_reminder(
 }
 
 pub async fn retime_reminder(
-    State((reminders, past_event)): ApiState,
+    State((db_file, past_event)): ApiState,
     Path(id): Path<usize>,
     retime_object: Result<Json<TimeObject>, JsonRejection>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(mut past_event) = past_event.lock() else {
@@ -233,7 +239,7 @@ pub async fn retime_reminder(
     let Ok(Json(retime_object)) = retime_object else {
         return StatusCode::UNPROCESSABLE_ENTITY;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         reminder.set_finish_time(retime_object.finish_time);
         reminder.set_whole_duration(retime_object.duration);
         reminder.set_reminder_type(retime_object.reminder_type.clone());
@@ -246,16 +252,16 @@ pub async fn retime_reminder(
 }
 
 pub async fn pause_reminder(
-    State((reminders, past_event)): ApiState,
+    State((db_file, past_event)): ApiState,
     Path(id): Path<usize>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(mut past_event) = past_event.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         reminder.toggle_pause();
         *past_event = PastEvent::ReminderPause(reminder.clone());
         print!("\n' ' ({}) ", reminder.name());
@@ -266,16 +272,16 @@ pub async fn pause_reminder(
 }
 
 pub async fn toggle_reminder_repeat(
-    State((reminders, past_event)): ApiState,
+    State((db_file, past_event)): ApiState,
     Path(id): Path<usize>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(mut past_event) = past_event.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         if let Some(toggled) = reminder.toggle_repeat() {
             if toggled {
                 *past_event = PastEvent::ReminderRepeatToggle(reminder.clone());
@@ -289,17 +295,17 @@ pub async fn toggle_reminder_repeat(
 }
 
 pub async fn push_reminder_duration(
-    State((reminders, _)): ApiState,
+    State((db_file, _)): ApiState,
     Path(id): Path<usize>,
     amount_to_add: Result<Json<core::time::Duration>, JsonRejection>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(Json(amount_to_add)) = amount_to_add else {
         return StatusCode::UNPROCESSABLE_ENTITY;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         let Ok(duration): Result<time::Duration, _> = amount_to_add.try_into() else {
             return StatusCode::INTERNAL_SERVER_ERROR;
         };
@@ -312,17 +318,17 @@ pub async fn push_reminder_duration(
 }
 
 pub async fn cut_reminder_duration(
-    State((reminders, _)): ApiState,
+    State((db_file, _)): ApiState,
     Path(id): Path<usize>,
     amount_to_subtract: Result<Json<core::time::Duration>, JsonRejection>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(Json(amount_to_subtract)) = amount_to_subtract else {
         return StatusCode::UNPROCESSABLE_ENTITY;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         let Ok(duration): Result<time::Duration, _> = amount_to_subtract.try_into() else {
             return StatusCode::INTERNAL_SERVER_ERROR;
         };
@@ -335,17 +341,17 @@ pub async fn cut_reminder_duration(
 }
 
 pub async fn alter_reminder_description(
-    State((reminders, _)): ApiState,
+    State((db_file, _)): ApiState,
     Path(id): Path<usize>,
     new_description: Result<Json<String>, JsonRejection>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
     let Ok(Json(new_description)) = new_description else {
         return StatusCode::UNPROCESSABLE_ENTITY;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         reminder.set_description(new_description.clone());
         print!("\n\\n ({}) ", reminder.name());
         StatusCode::OK
@@ -355,17 +361,30 @@ pub async fn alter_reminder_description(
 }
 
 pub async fn confirm_reminder_finish_event(
-    State((reminders, _)): ApiState,
+    State((db_file, _)): ApiState,
     Path(id): Path<usize>,
 ) -> StatusCode {
-    let Ok(mut reminders) = reminders.lock() else {
+    let Ok(mut db_file) = db_file.lock() else {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
-    if let Some(reminder) = get_reminder_by_id(&mut reminders, id) {
+    if let Some(reminder) = get_reminder_by_id(&mut db_file.reminders, id) {
         reminder.confirm_finish_event();
         print!("\nc ({}) ", reminder.name());
         StatusCode::OK
     } else {
         StatusCode::NOT_FOUND
     }
+}
+
+pub async fn pop_reminder_history(State((db_file, _)): ApiState) -> StatusCode {
+    let Ok(mut db_file) = db_file.lock() else {
+        return StatusCode::INTERNAL_SERVER_ERROR;
+    };
+
+    if let Some(history_reminders) = db_file.history.pop() {
+        db_file.reset_history_on_change = true;
+        db_file.reminders = history_reminders;
+        return StatusCode::OK;
+    };
+    StatusCode::INTERNAL_SERVER_ERROR
 }
