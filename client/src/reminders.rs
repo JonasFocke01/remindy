@@ -5,11 +5,16 @@ use reminder::reminder::Reminder;
 
 pub fn build_reminder_list(reminders: &[Reminder], cursor_position: usize) -> String {
     let mut result = String::new();
+    let mut displaying_due = false;
+    let Ok(time_format) = format_description::parse("[hour]:[minute]:[second]") else {
+        return String::new();
+    };
     for (i, reminder) in reminders.iter().enumerate() {
         let time_left = reminder.remaining_duration();
-        let Ok(time_format) = format_description::parse("[hour]:[minute]:[second]") else {
-            return String::new();
-        };
+        if time_left.is_none() && !displaying_due {
+            displaying_due = true;
+            result.push_str(format!(" {:-<68}\n", "").blue().to_string().as_str());
+        }
         result.push_str(
             format!(
                 "\r {}{}{}\n\r{}",
