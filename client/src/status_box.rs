@@ -50,6 +50,8 @@ pub fn build_status_box(last_event: PastEvent) -> String {
         )
         .as_str(),
     );
+    result.push_str(format!("           | {:<36}|\n\r", "'u' -> undo").as_str());
+    result.push_str(format!("           | {:<36}|\n\r", "'U' -> redo").as_str());
     result.push_str("           =======================================\n\r");
     result.push_str(format!("            {:^54}\n\n\r", last_event.to_string()).as_str());
     result
