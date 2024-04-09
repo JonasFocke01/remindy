@@ -27,8 +27,8 @@ mod api;
 use crate::api::{
     alter_reminder_description, confirm_reminder_finish_event, cut_reminder_duration,
     delete_reminder, force_restart_reminder, get_past_event, pause_reminder, pop_reminder_history,
-    push_reminder_duration, rename_reminder, reset_reminder_flags, restart_reminder,
-    retime_reminder, snooze_reminder, toggle_reminder_repeat,
+    pop_reminder_redo_history, push_reminder_duration, rename_reminder, reset_reminder_flags,
+    restart_reminder, retime_reminder, snooze_reminder, toggle_reminder_repeat,
 };
 use reminder::{past_event::PastEvent, reminder::Reminder, root_path, REMINDER_DB_FILE};
 
@@ -36,6 +36,7 @@ use reminder::{past_event::PastEvent, reminder::Reminder, root_path, REMINDER_DB
 struct DBFile {
     reminders: Vec<Reminder>,
     history: Vec<Vec<Reminder>>,
+    redoable_history: Vec<Vec<Reminder>>,
     reset_history_on_change: bool,
 }
 
@@ -69,6 +70,7 @@ async fn main() {
         Arc::new(Mutex::new(DBFile {
             reminders: vec![],
             history: vec![],
+            redoable_history: vec![],
             reset_history_on_change: false,
         }))
     };
@@ -167,6 +169,7 @@ async fn main() {
             populate_reminder_history,
         ))
         .route("/reminders/undo", put(pop_reminder_history))
+        .route("/reminders/redo", put(pop_reminder_redo_history))
         .layer(axum::middleware::from_fn_with_state(
             Arc::clone(&db_file),
             write_reminder_db_middleware,
@@ -204,6 +207,7 @@ async fn populate_reminder_history(
     if let Ok(mut db_file) = db_file.lock() {
         if db_file.reset_history_on_change {
             db_file.history = vec![];
+            db_file.redoable_history = vec![];
             db_file.reset_history_on_change = false;
         }
         let reminders = db_file.reminders.clone();

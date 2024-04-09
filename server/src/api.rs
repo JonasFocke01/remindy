@@ -381,9 +381,26 @@ pub async fn pop_reminder_history(State((db_file, _)): ApiState) -> StatusCode {
         return StatusCode::INTERNAL_SERVER_ERROR;
     };
 
+    let current_reminders = db_file.reminders.clone();
+    db_file.redoable_history.push(current_reminders);
     if let Some(history_reminders) = db_file.history.pop() {
         db_file.reset_history_on_change = true;
         db_file.reminders = history_reminders;
+        return StatusCode::OK;
+    };
+    StatusCode::INTERNAL_SERVER_ERROR
+}
+
+pub async fn pop_reminder_redo_history(State((db_file, _)): ApiState) -> StatusCode {
+    let Ok(mut db_file) = db_file.lock() else {
+        return StatusCode::INTERNAL_SERVER_ERROR;
+    };
+
+    let current_reminders = db_file.reminders.clone();
+    db_file.history.push(current_reminders);
+    if let Some(redo_history_reminders) = db_file.redoable_history.pop() {
+        db_file.reset_history_on_change = true;
+        db_file.reminders = redo_history_reminders;
         return StatusCode::OK;
     };
     StatusCode::INTERNAL_SERVER_ERROR

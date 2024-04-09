@@ -6,7 +6,7 @@ use std::{
 use config::Config;
 use crossterm::{
     cursor,
-    event::{poll, read, Event, KeyCode, KeyModifiers},
+    event::{poll, read, Event, KeyCode, KeyModifiers, ModifierKeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode},
 };
@@ -236,6 +236,20 @@ pub fn read_input(
                     if request_client
                         .put(format!(
                             "http://{}:{}/reminders/undo",
+                            config.network().remote_ip(),
+                            config.network().port(),
+                        ))
+                        .send()
+                        .is_ok()
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                KeyCode::Char('U') => {
+                    if request_client
+                        .put(format!(
+                            "http://{}:{}/reminders/redo",
                             config.network().remote_ip(),
                             config.network().port(),
                         ))
