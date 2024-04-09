@@ -31,7 +31,7 @@
 		});
 	}
 
-	let newName = '';
+	let newName = 'From Handy';
 	let newDescription = '';
 	let newDate = new Date();
 
@@ -56,6 +56,7 @@
 			.then((response) => {
 				if (response.status === 200) {
 					submit_status = 'Ok';
+					newDescription = '';
 				} else {
 					submit_status = 'Error';
 				}
@@ -112,14 +113,7 @@
 <form on:submit|preventDefault={handleNewReminder}>
 	<h3 class="font-bold mt-10 mb-4">Create new reminder</h3>
 	<div class="flex flex-col">
-		<label for="newName">Name</label>
-		<input
-			type="text"
-			bind:value={newName}
-			class="border w-1/3 text-black"
-			on:change={() => (submit_status = 'Idle')}
-		/>
-		<label for="newDescription">Description (With time!)</label>
+		<label for="newDescription">Description</label>
 		<input
 			type="text"
 			bind:value={newDescription}
@@ -127,7 +121,7 @@
 			class="border w-1/3 text-black"
 		/>
 	</div>
-	<div class="flex">
+	<div class="flex flex-col">
 		<DateInput bind:value={newDate} format="dd.MM.yyyy" />
 		<TimePicker
 			date={newDate}
