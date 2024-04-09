@@ -96,10 +96,16 @@
 <h3 class="font-bold my-10">Current reminder list:</h3>
 {#each reminders as reminder}
 	<div
-		class={'border rounded-lg mt-2 p-2 '}
-		style:background-color={reminder.month % 2 ? '#1ca51a90' : '#c9460e90'}
+		class={'border rounded-lg mt-2 p-2'}
+		style:background-color={'rgb(0,' +
+			reminder.month * 20 +
+			',' +
+			(255 - reminder.month * 20) +
+			')'}
 	>
-		{reminder.stringifyed}
+		<p class="w-1/2 truncate">
+			{reminder.stringifyed}
+		</p>
 	</div>
 {/each}
 
