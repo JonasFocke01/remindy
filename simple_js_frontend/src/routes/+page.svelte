@@ -131,13 +131,12 @@
 			}}
 		/>
 	</div>
+	{#if submit_status === 'Ok'}
+		<p class="bg-green-200 text-black">Successfully created {newName}</p>
+	{:else if submit_status === 'Error'}
+		<p class="bg-red-200 text-black">There was an error when creating {newName}</p>
+	{:else if submit_status === 'Waiting'}
+		<p class="bg-blue-200">Creating {newName}, please wait...</p>
+	{/if}
 	<button class="border w-1/3 mt-4 bg-gray-500">SUBMIT</button>
 </form>
-
-{#if submit_status === 'Ok'}
-	<p class="bg-green-200 text-black">Successfully created {newName}</p>
-{:else if submit_status === 'Error'}
-	<p class="bg-red-200 text-black">There was an error when creating {newName}</p>
-{:else if submit_status === 'Waiting'}
-	<p class="bg-blue-200">Creating {newName}, please wait...</p>
-{/if}
