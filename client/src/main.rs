@@ -76,6 +76,7 @@ pub fn main() {
                     should_fetch_data = read_input(
                         &mut stdout,
                         selected_reminder,
+                        &reminders,
                         reminders.len(),
                         &mut cursor_position,
                         &request_client,
@@ -85,6 +86,7 @@ pub fn main() {
                     should_fetch_data = read_input(
                         &mut stdout,
                         &Reminder::default(),
+                        &reminders,
                         reminders.len(),
                         &mut cursor_position,
                         &request_client,

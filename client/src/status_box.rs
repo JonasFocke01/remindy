@@ -30,6 +30,13 @@ pub fn build_status_box(last_event: PastEvent) -> String {
     result.push_str(
         format!(
             "           | {:<36}|\n\r",
+            "'/' -> search names and descriptions"
+        )
+        .as_str(),
+    );
+    result.push_str(
+        format!(
+            "           | {:<36}|\n\r",
             "'s' -> toggle 'send external message'"
         )
         .as_str(),

@@ -23,6 +23,7 @@ use reminder::reminder::{my_local_offset, ApiReminder, Reminder, ReminderType, T
 pub fn read_input(
     stdout: &mut Stdout,
     selected_reminder: &Reminder,
+    all_reminders: &Vec<Reminder>,
     reminder_amount: usize,
     cursor_position: &mut usize,
     request_client: &reqwest::blocking::Client,
@@ -257,6 +258,32 @@ pub fn read_input(
                         .is_ok()
                     {
                         return true;
+                    }
+                    return false;
+                }
+                KeyCode::Char('/') => {
+                    execute!(stdout, cursor::Show,).unwrap();
+                    let mut search_term = String::new();
+                    let _trash_bin = enable_raw_mode().is_ok();
+                    let _trash_bin = stdout.write_all(b"/");
+                    let _trash_bin = stdout.flush();
+                    let _trash_bin = disable_raw_mode().is_ok();
+                    if stdin().read_line(&mut search_term).is_err() {
+                        return false;
+                    };
+                    search_term = search_term.replace('\n', "").to_lowercase();
+                    if let Some(found_reminder_index) = all_reminders.iter().position(|reminder| {
+                        reminder
+                            .name()
+                            .to_lowercase()
+                            .contains(search_term.as_str())
+                            || reminder
+                                .description()
+                                .to_lowercase()
+                                .contains(search_term.as_str())
+                    }) {
+                        *cursor_position = found_reminder_index;
+                        return false;
                     }
                     return false;
                 }
