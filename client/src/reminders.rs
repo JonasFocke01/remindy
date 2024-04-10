@@ -10,6 +10,11 @@ pub fn build_reminder_list(reminders: &[Reminder], cursor_position: usize) -> St
         return String::new();
     };
     for (i, reminder) in reminders.iter().enumerate() {
+        let limited_length_reminder_description = if reminder.description().len() > 80 {
+            format!("{:.69}\n\r", reminder.description())
+        } else {
+            String::from(reminder.description())
+        };
         let time_left = reminder.remaining_duration();
         if time_left.is_none() && !displaying_due {
             displaying_due = true;
@@ -39,14 +44,28 @@ pub fn build_reminder_list(reminders: &[Reminder], cursor_position: usize) -> St
                             "                        {} {}\n\r{}",
                             finish_time,
                             weekday,
-                            reminder.description().replace('\n', "\n\r").cyan()
+                            limited_length_reminder_description
+                                .replace('\n', "\n\r")
+                                .cyan()
                         )
                         .cyan()
                     } else {
-                        format!("{}", reminder.description().replace('\n', "\n\r").cyan()).cyan()
+                        format!(
+                            "{}",
+                            limited_length_reminder_description
+                                .replace('\n', "\n\r")
+                                .cyan()
+                        )
+                        .cyan()
                     }
                 } else {
-                    format!("{}", reminder.description().replace('\n', "\n\r").cyan()).cyan()
+                    format!(
+                        "{}",
+                        limited_length_reminder_description
+                            .replace('\n', "\n\r")
+                            .cyan()
+                    )
+                    .cyan()
                 }
             )
             .as_str(),
