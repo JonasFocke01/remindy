@@ -54,8 +54,8 @@ pub fn main() {
         drop(locked_past_event);
 
         let mut should_fetch_data = false;
-        if let Ok(reminders) = reminders.lock() {
-            let reminder_list = build_reminder_list(&reminders, cursor_position);
+        if let Ok(mut reminders) = reminders.lock() {
+            let reminder_list = build_reminder_list(&mut reminders, cursor_position);
             let reminder_list = reminder_list.as_bytes();
             let _trash_bin = enable_raw_mode().is_ok();
             execute!(

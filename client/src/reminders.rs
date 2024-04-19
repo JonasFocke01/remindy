@@ -1,15 +1,32 @@
+use std::cmp::Ordering;
+
 use colored::Colorize;
 use time::format_description;
 
 use reminder::reminder::Reminder;
 
-pub fn build_reminder_list(reminders: &[Reminder], cursor_position: usize) -> String {
+pub fn build_reminder_list(reminders: &mut [Reminder], cursor_position: usize) -> String {
     let mut result = String::new();
     let mut displaying_due = false;
     let Ok(time_format) = format_description::parse("[hour]:[minute]:[second]") else {
         return String::new();
     };
-    for (i, reminder) in reminders.iter().enumerate() {
+    let Some(longest_name_reminder) = reminders.iter().max_by(|a, b| {
+        if a.name().len() > b.name().len() {
+            Ordering::Greater
+        } else {
+            Ordering::Less
+        }
+    }) else {
+        return String::new();
+    };
+    let longest_name_length: usize = longest_name_reminder.name().len();
+
+    for (i, reminder) in reminders.iter_mut().enumerate() {
+        while reminder.name().len() < longest_name_length {
+            let modified_name = reminder.name();
+            reminder.set_name(format!("{modified_name} "));
+        }
         let limited_length_reminder_description = if reminder.description().len() > 80 {
             format!("{:.69}\n\r", reminder.description())
         } else {
