@@ -34,7 +34,7 @@ mod key_reader;
 use key_reader::read_input;
 
 pub fn main() {
-    let config = Arc::new(Mutex::new(Config::new()));
+    let config = Arc::new(Config::new());
     let mut cursor_position: usize = 0;
     let mut stdout = std::io::stdout();
     let request_client = reqwest::blocking::Client::new();
@@ -71,29 +71,27 @@ pub fn main() {
             if stdout.write_all(reminder_list).is_err() {
                 return;
             }
-            if let Ok(config) = config.lock() {
-                if let Some(selected_reminder) = reminders.get(cursor_position) {
-                    should_fetch_data = read_input(
-                        &mut stdout,
-                        selected_reminder,
-                        &reminders,
-                        reminders.len(),
-                        &mut cursor_position,
-                        &request_client,
-                        &config,
-                    );
-                } else {
-                    should_fetch_data = read_input(
-                        &mut stdout,
-                        &Reminder::default(),
-                        &reminders,
-                        reminders.len(),
-                        &mut cursor_position,
-                        &request_client,
-                        &config,
-                    );
-                }
-            };
+            if let Some(selected_reminder) = reminders.get(cursor_position) {
+                should_fetch_data = read_input(
+                    &mut stdout,
+                    selected_reminder,
+                    &reminders,
+                    reminders.len(),
+                    &mut cursor_position,
+                    &request_client,
+                    &config,
+                );
+            } else {
+                should_fetch_data = read_input(
+                    &mut stdout,
+                    &Reminder::default(),
+                    &reminders,
+                    reminders.len(),
+                    &mut cursor_position,
+                    &request_client,
+                    &config,
+                );
+            }
         }
         if should_fetch_data {
             fetch_data(&reminders, &past_event, &config);
@@ -104,7 +102,7 @@ pub fn main() {
 fn spawn_async_reminder_fetch(
     reminders: Arc<Mutex<Vec<Reminder>>>,
     past_event: Arc<Mutex<PastEvent>>,
-    config: Arc<Mutex<Config>>,
+    config: Arc<Config>,
 ) {
     thread::spawn(move || loop {
         fetch_data(&reminders, &past_event, &config);
@@ -115,13 +113,8 @@ fn spawn_async_reminder_fetch(
 fn fetch_data(
     reminders: &Mutex<Vec<Reminder>>,
     past_event: &Arc<Mutex<PastEvent>>,
-    config: &Arc<Mutex<Config>>,
+    config: &Arc<Config>,
 ) {
-    let config: Config = if let Ok(config) = config.lock() {
-        config.clone()
-    } else {
-        return;
-    };
     let request_client = reqwest::blocking::Client::new();
     let mut new_reminders: Vec<Reminder> = vec![];
     if let Ok(response) = reqwest::blocking::get(format!(
