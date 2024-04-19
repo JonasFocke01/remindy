@@ -48,7 +48,7 @@
 			redirect: 'follow',
 			body: JSON.stringify({
 				name: newName,
-				description: `                          ${newDescription}\n                       FIXME!!!\n                        Actual date: ${newDate.toLocaleDateString('de-De')}\n                        Actual time: ${newDate.toLocaleTimeString('de-De')}\n`,
+				description: `${newDescription}\n                       FIXME!!!\n                        Actual date: ${newDate.toLocaleDateString('de-De')}\n                        Actual time: ${newDate.toLocaleTimeString('de-De')}\n`,
 				finish_time: dateAsSerializedOffsetDateTime(newDate),
 				reminder_type: 'Time'
 			})

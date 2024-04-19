@@ -32,6 +32,15 @@ pub fn build_reminder_list(reminders: &mut [Reminder], cursor_position: usize) -
         } else {
             String::from(reminder.description())
         };
+        let mut whitespace_enhanced_reminder_description = format!(
+            "                        {
+
+            }",
+            limited_length_reminder_description.replace('\n', "\n                        ")
+        );
+        for _ in 0..24 {
+            whitespace_enhanced_reminder_description.pop();
+        }
         let time_left = reminder.remaining_duration();
         if time_left.is_none() && !displaying_due {
             displaying_due = true;
@@ -61,7 +70,7 @@ pub fn build_reminder_list(reminders: &mut [Reminder], cursor_position: usize) -
                             "                        {} {}\n\r{}",
                             finish_time,
                             weekday,
-                            limited_length_reminder_description
+                            whitespace_enhanced_reminder_description
                                 .replace('\n', "\n\r")
                                 .cyan()
                         )
@@ -69,7 +78,7 @@ pub fn build_reminder_list(reminders: &mut [Reminder], cursor_position: usize) -
                     } else {
                         format!(
                             "{}",
-                            limited_length_reminder_description
+                            whitespace_enhanced_reminder_description
                                 .replace('\n', "\n\r")
                                 .cyan()
                         )
@@ -78,7 +87,7 @@ pub fn build_reminder_list(reminders: &mut [Reminder], cursor_position: usize) -
                 } else {
                     format!(
                         "{}",
-                        limited_length_reminder_description
+                        whitespace_enhanced_reminder_description
                             .replace('\n', "\n\r")
                             .cyan()
                     )
