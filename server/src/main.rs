@@ -212,6 +212,9 @@ async fn populate_reminder_history(
         }
         let reminders = db_file.reminders.clone();
         db_file.history.push(reminders);
+        if db_file.history.len() > 50 {
+            db_file.history.remove(0);
+        }
     };
     let result = next.run(req).await;
     Ok(result)
