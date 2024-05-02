@@ -1325,6 +1325,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "i3blocks_client"
+version = "0.1.0"
+dependencies = [
+ "config",
+ "reminder",
+ "reqwest",
+]
+
+[[package]]
 name = "iana-time-zone"
 version = "0.1.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"

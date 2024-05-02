@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [ "client","reminder", "server", "config"]
+members = [ "client","reminder", "server", "config", "i3blocks_client"]
 
 [workspace.lints.rust]
 non_snake_case = "allow"
