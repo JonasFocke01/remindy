@@ -1,7 +1,7 @@
 use reminder::{past_event::PastEvent, reminder::my_local_offset};
 
 #[allow(clippy::module_name_repetitions)]
-pub fn build_status_box(last_event: PastEvent) -> String {
+pub fn build_status_box(last_event: &PastEvent) -> String {
     let mut result = String::new();
     result.push_str("           =======================================\n\r");
     result.push_str(format!("           | {:<36}|\n\r", "'j', 'k' -> up, down").as_str());

@@ -6,7 +6,7 @@ use std::{
 use config::Config;
 use crossterm::{
     cursor,
-    event::{poll, read, Event, KeyCode, KeyModifiers, ModifierKeyCode},
+    event::{poll, read, Event, KeyCode, KeyModifiers},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode},
 };
@@ -23,13 +23,13 @@ use reminder::reminder::{my_local_offset, ApiReminder, Reminder, ReminderType, T
 pub fn read_input(
     stdout: &mut Stdout,
     selected_reminder: &Reminder,
-    all_reminders: &Vec<Reminder>,
+    all_reminders: &[Reminder],
     reminder_amount: usize,
     cursor_position: &mut usize,
     request_client: &reqwest::blocking::Client,
     config: &Config,
 ) -> bool {
-    if poll(std::time::Duration::from_secs(1)).map_or_else(|_| true, |v| v) {
+    if poll(std::time::Duration::from_secs(1)).unwrap_or(true) {
         #[allow(clippy::single_match, clippy::wildcard_enum_match_arm)]
         if let Ok(Event::Key(event)) = read() {
             return match event.code {
@@ -218,21 +218,21 @@ pub fn read_input(
                     }
                     return false;
                 }
-                KeyCode::Char('s') => {
-                    if request_client
-                        .put(format!(
-                            "http://{}:{}/reminders/{}/toggle_send_e_message",
-                            config.network().remote_ip(),
-                            config.network().port(),
-                            selected_reminder.id()
-                        ))
-                        .send()
-                        .is_ok()
-                    {
-                        return true;
-                    }
-                    return false;
-                }
+                // KeyCode::Char('s') => {
+                //     if request_client
+                //         .put(format!(
+                //             "http://{}:{}/reminders/{}/toggle_send_e_message",
+                //             config.network().remote_ip(),
+                //             config.network().port(),
+                //             selected_reminder.id()
+                //         ))
+                //         .send()
+                //         .is_ok()
+                //     {
+                //         return true;
+                //     }
+                //     return false;
+                // }
                 KeyCode::Char('u') => {
                     if request_client
                         .put(format!(

@@ -49,7 +49,7 @@ pub fn main() {
         let Ok(locked_past_event) = past_event.lock() else {
             return;
         };
-        let status_box = build_status_box(locked_past_event.clone());
+        let status_box = build_status_box(&locked_past_event);
         let status_box = status_box.as_bytes();
         drop(locked_past_event);
 

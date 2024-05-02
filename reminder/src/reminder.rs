@@ -1,7 +1,7 @@
 use std::{
     error::Error,
     fmt::Display,
-    process::{Command, Stdio},
+    process::Command,
 };
 
 #[cfg(feature = "colored")]

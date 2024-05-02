@@ -22,10 +22,12 @@ pub fn root_path() -> Result<PathBuf, ()> {
 }
 
 #[cfg(debug_assertions)]
-#[must_use]
+#[allow(clippy::result_unit_err)]
+/// # Errors
+///
+/// Only for compatability reasons, will never fail in debug mode
 pub fn root_path() -> Result<PathBuf, ()> {
     Ok(PathBuf::from("dbg_db"))
-    // "dbg_db".to_string()
 }
 
 #[must_use]
