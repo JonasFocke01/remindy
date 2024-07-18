@@ -168,6 +168,18 @@ pub fn read_input(
                     }
                     return false;
                 }
+                KeyCode::Char('g') => {
+                    if let Ok(Event::Key(event)) = read() {
+                        if event.code == KeyCode::Char('g') {
+                            *cursor_position = 0
+                        }
+                    }
+                    return false;
+                }
+                KeyCode::Char('G') => {
+                    *cursor_position = reminder_amount.saturating_sub(1);
+                    return false;
+                }
                 KeyCode::Char('d') => {
                     if *cursor_position == reminder_amount.saturating_sub(1)
                         && selected_reminder.delete_flag()
