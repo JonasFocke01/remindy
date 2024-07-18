@@ -377,6 +377,17 @@ pub fn read_input(
                     }
                     return false;
                 }
+                KeyCode::Char(':') => {
+                    if let Ok(Event::Key(event)) = read() {
+                        if event.code == KeyCode::Char('q') {
+                            let _trash_bin = execute!(stdout, cursor::Show,);
+                            let _trash_bin = disable_raw_mode().is_ok();
+                            println!("Exiting remindy");
+                            std::process::exit(0);
+                        }
+                    }
+                    return false;
+                }
                 KeyCode::Esc => {
                     if request_client
                         .put(format!(
